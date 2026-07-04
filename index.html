@@ -1,0 +1,2636 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Math for Machine Learning — Interactive Beginner Tutorial</title>
+<script>
+  MathJax = {
+    tex: { inlineMath: [['$', '$'], ['\\(', '\\)']] },
+    svg: { fontCache: 'global' },
+    startup: {
+      ready: () => {
+        MathJax.startup.defaultReady();
+        MathJax.startup.promise.then(() => document.body.classList.add('math-ready'));
+      }
+    }
+  };
+</script>
+<script async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+<style>
+  /* ---------- Theme variables ---------- */
+  :root[data-theme="dark"] {
+    --bg: #0f172a;
+    --bg-2: #0b1226;
+    --panel: #111a2e;
+    --panel-2: #16223d;
+    --text: #e6edf7;
+    --muted: #9fb0cc;
+    --accent: #4cc9f0;
+    --accent-2: #90e0ef;
+    --good: #7bd389;
+    --warn: #ffd166;
+    --purple: #b892ff;
+    --pink: #ff8fa3;
+    --danger: #ff6b6b;
+    --border: #24314f;
+    --shadow: rgba(0,0,0,0.35);
+    --code-bg: #16223d;
+    --grid: #24314f;
+    --highlight: rgba(76, 201, 240, 0.15);
+  }
+  :root[data-theme="light"] {
+    --bg: #f8fafc;
+    --bg-2: #eef2f8;
+    --panel: #ffffff;
+    --panel-2: #f1f5fb;
+    --text: #1a2340;
+    --muted: #55668a;
+    --accent: #0891b2;
+    --accent-2: #0e7490;
+    --good: #2f9e44;
+    --warn: #b78100;
+    --purple: #7c3aed;
+    --pink: #d63384;
+    --danger: #dc2626;
+    --border: #d7dfec;
+    --shadow: rgba(30, 41, 59, 0.08);
+    --code-bg: #eef2f8;
+    --grid: #d0d9e6;
+    --highlight: rgba(8, 145, 178, 0.12);
+  }
+
+  /* ---------- Base ---------- */
+  * { box-sizing: border-box; }
+  html, body {
+    margin: 0; padding: 0;
+    background: var(--bg);
+    color: var(--text);
+    font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    line-height: 1.7;
+    scroll-behavior: smooth;
+    transition: background 0.25s, color 0.25s;
+  }
+  html { font-size: var(--font-size, 16px); }
+  a { color: var(--accent); text-decoration: none; }
+  a:hover { text-decoration: underline; }
+  button { font-family: inherit; cursor: pointer; }
+
+  /* ---------- Progress bar ---------- */
+  .progress-bar {
+    position: fixed;
+    top: 0; left: 0;
+    height: 4px;
+    background: linear-gradient(90deg, var(--accent), var(--purple));
+    width: 0%;
+    z-index: 1000;
+    transition: width 0.1s linear;
+    box-shadow: 0 0 8px var(--accent);
+  }
+
+  /* ---------- Top bar ---------- */
+  .topbar {
+    position: sticky;
+    top: 0;
+    z-index: 900;
+    background: var(--bg-2);
+    border-bottom: 1px solid var(--border);
+    padding: 12px 24px;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    backdrop-filter: blur(6px);
+  }
+  .topbar h1 {
+    margin: 0;
+    font-size: 1.1rem;
+    letter-spacing: 0.02em;
+    background: linear-gradient(90deg, var(--accent), var(--purple));
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    font-weight: 700;
+  }
+  .topbar .spacer { flex: 1; }
+  .icon-btn {
+    background: var(--panel);
+    color: var(--text);
+    border: 1px solid var(--border);
+    padding: 6px 12px;
+    border-radius: 8px;
+    font-size: 0.85rem;
+    transition: all 0.15s;
+  }
+  .icon-btn:hover { background: var(--panel-2); transform: translateY(-1px); }
+  .icon-btn.active { background: var(--accent); color: var(--bg); border-color: var(--accent); }
+  .btn-group { display: flex; gap: 6px; }
+  .stat {
+    font-size: 0.82rem;
+    color: var(--muted);
+    padding: 6px 10px;
+    background: var(--panel);
+    border-radius: 8px;
+    border: 1px solid var(--border);
+  }
+  .stat b { color: var(--accent); }
+
+  /* ---------- Hero ---------- */
+  header.hero {
+    padding: 48px 24px;
+    background:
+      radial-gradient(circle at 20% 30%, rgba(76,201,240,0.15), transparent 40%),
+      radial-gradient(circle at 80% 70%, rgba(184,146,255,0.15), transparent 40%),
+      var(--bg-2);
+    text-align: center;
+    border-bottom: 1px solid var(--border);
+  }
+  header.hero h1 {
+    margin: 0 0 8px;
+    font-size: clamp(1.8rem, 4vw, 2.6rem);
+    background: linear-gradient(90deg, var(--accent), var(--purple));
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+  header.hero p { color: var(--muted); margin: 0 0 20px; font-size: 1.05rem; }
+  .hero-badges {
+    display: flex; flex-wrap: wrap; gap: 8px;
+    justify-content: center; margin-top: 12px;
+  }
+  .hero-badge {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    padding: 6px 14px;
+    border-radius: 20px;
+    font-size: 0.85rem;
+    color: var(--muted);
+  }
+  .hero-badge b { color: var(--text); }
+
+  /* ---------- Layout — full width ---------- */
+  .layout {
+    display: grid;
+    grid-template-columns: 300px 1fr;
+    width: 100%;
+  }
+  nav.toc {
+    position: sticky;
+    top: 57px;
+    align-self: start;
+    height: calc(100vh - 57px);
+    overflow-y: auto;
+    padding: 20px 14px;
+    border-right: 1px solid var(--border);
+    background: var(--panel);
+    font-size: 0.9rem;
+    scrollbar-width: thin;
+    scrollbar-color: var(--border) transparent;
+  }
+  nav.toc::-webkit-scrollbar { width: 6px; }
+  nav.toc::-webkit-scrollbar-track { background: transparent; }
+  nav.toc::-webkit-scrollbar-thumb { background: transparent; border-radius: 3px; transition: background 0.2s; }
+  nav.toc:hover::-webkit-scrollbar-thumb { background: var(--border); }
+  nav.toc::-webkit-scrollbar-thumb:hover { background: var(--muted); }
+  nav.toc h3 { margin: 14px 4px 6px; font-size: 0.78rem; text-transform: uppercase; letter-spacing: 0.08em; padding-left: 6px; }
+  nav.toc .lvl-title-1 { color: var(--good); }
+  nav.toc .lvl-title-2 { color: var(--warn); }
+  nav.toc .lvl-title-3 { color: #f4a261; }
+  nav.toc .lvl-title-4 { color: var(--pink); }
+  nav.toc ol { list-style: none; padding: 0; margin: 0 0 6px; }
+  nav.toc ol li { margin: 2px 0; display: flex; align-items: center; gap: 6px; }
+  nav.toc a {
+    display: block;
+    padding: 6px 10px;
+    border-radius: 6px;
+    color: var(--text);
+    flex: 1;
+    transition: background 0.15s;
+  }
+  nav.toc a:hover { background: var(--panel-2); text-decoration: none; }
+  nav.toc a.active {
+    background: var(--highlight);
+    color: var(--accent);
+    font-weight: 600;
+    border-left: 3px solid var(--accent);
+    padding-left: 7px;
+  }
+  nav.toc .toc-intro { color: var(--muted); margin: 4px 6px 12px; font-size: 0.82rem; }
+  .toc-check {
+    width: 18px; height: 18px;
+    accent-color: var(--good);
+    cursor: pointer;
+  }
+  #toc-search {
+    width: 100%;
+    padding: 8px 10px;
+    background: var(--bg);
+    color: var(--text);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    margin-bottom: 12px;
+    font-size: 0.9rem;
+  }
+
+  main {
+    padding: 30px 40px 80px;
+    min-width: 0;
+    max-width: 1400px;
+    margin: 0 auto;
+  }
+
+  /* ---------- Section cards ---------- */
+  section.topic {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 30px 34px;
+    margin-bottom: 32px;
+    box-shadow: 0 4px 16px var(--shadow);
+    scroll-margin-top: 80px;
+  }
+  section.topic h2 {
+    margin-top: 0;
+    color: var(--accent);
+    border-bottom: 1px solid var(--border);
+    padding-bottom: 12px;
+    font-size: 1.7rem;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+  }
+  section.topic h3 { color: var(--accent-2); margin-top: 28px; font-size: 1.2rem; }
+  section.topic h4 { color: var(--text); margin-top: 20px; margin-bottom: 6px; }
+  section.topic p { max-width: 78ch; }
+  section.topic ul, section.topic ol { max-width: 78ch; }
+
+  .section-meta {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    font-size: 0.82rem;
+    color: var(--muted);
+    margin-bottom: 6px;
+  }
+  .reading-time { padding: 2px 10px; background: var(--panel-2); border-radius: 10px; }
+  .complete-btn {
+    background: var(--panel-2);
+    color: var(--text);
+    border: 1px solid var(--border);
+    padding: 4px 12px;
+    border-radius: 10px;
+    font-size: 0.8rem;
+    transition: all 0.15s;
+  }
+  .complete-btn.done { background: var(--good); color: white; border-color: var(--good); }
+  .complete-btn:hover { transform: translateY(-1px); }
+
+  code, .math-inline { background: var(--code-bg); padding: 2px 6px; border-radius: 4px; font-family: "Consolas", "Cascadia Code", monospace; font-size: 0.95em; }
+
+  .example {
+    background: var(--panel-2);
+    border-left: 4px solid var(--accent);
+    padding: 14px 18px;
+    border-radius: 8px;
+    margin: 14px 0;
+  }
+  .example .label { color: var(--accent-2); font-weight: 700; text-transform: uppercase; font-size: 0.75rem; letter-spacing: 0.08em; }
+
+  .tip { background: rgba(123, 211, 137, 0.12); border-left: 4px solid var(--good); padding: 12px 16px; border-radius: 8px; margin: 14px 0; }
+  .warn { background: rgba(255, 209, 102, 0.12); border-left: 4px solid var(--warn); padding: 12px 16px; border-radius: 8px; margin: 14px 0; }
+  .ml-link { background: rgba(184, 146, 255, 0.10); border-left: 4px solid var(--purple); padding: 12px 16px; border-radius: 8px; margin: 14px 0; }
+  .ml-link .label { color: var(--purple); font-weight: 700; text-transform: uppercase; font-size: 0.75rem; letter-spacing: 0.08em; }
+
+  /* ---------- Quiz ---------- */
+  .quiz {
+    background: var(--bg-2);
+    border: 1px dashed var(--border);
+    border-radius: 12px;
+    padding: 18px 22px;
+    margin-top: 18px;
+  }
+  .quiz h4 { color: var(--warn); margin-top: 0; display: flex; align-items: center; gap: 8px; }
+  .quiz .q { margin-top: 14px; }
+  .quiz .q-text { font-weight: 600; margin-bottom: 8px; }
+  .options { display: flex; flex-direction: column; gap: 6px; margin: 6px 0; }
+  .option {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    padding: 10px 14px;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.15s;
+    text-align: left;
+    color: var(--text);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .option:hover { background: var(--panel-2); border-color: var(--accent); }
+  .option.correct { background: rgba(123, 211, 137, 0.2); border-color: var(--good); color: var(--good); }
+  .option.wrong { background: rgba(255, 107, 107, 0.15); border-color: var(--danger); color: var(--danger); }
+  .option.disabled { pointer-events: none; opacity: 0.7; }
+  .option .marker { font-weight: 700; }
+  .feedback { margin-top: 8px; font-size: 0.9rem; min-height: 1.2em; }
+  .feedback.ok { color: var(--good); }
+  .feedback.no { color: var(--danger); }
+
+  /* ---------- Resources ---------- */
+  .resources {
+    background: var(--bg-2);
+    border: 1px solid var(--border);
+    border-left: 4px solid var(--pink);
+    border-radius: 10px;
+    padding: 14px 20px;
+    margin-top: 20px;
+  }
+  .resources h4 { color: var(--pink); margin: 0 0 10px; font-size: 0.92rem; text-transform: uppercase; letter-spacing: 0.06em; }
+  .resources ul { list-style: none; padding: 0; margin: 0; }
+  .resources li { margin: 6px 0; padding: 4px 0; }
+  .kind {
+    display: inline-block;
+    font-size: 0.68rem;
+    font-weight: 700;
+    padding: 2px 8px;
+    border-radius: 10px;
+    margin-right: 8px;
+    letter-spacing: 0.04em;
+    vertical-align: middle;
+  }
+  .kind-video { background: rgba(214, 51, 132, 0.15); color: var(--pink); }
+  .kind-read { background: rgba(76, 201, 240, 0.15); color: var(--accent); }
+  .kind-course { background: rgba(123, 211, 137, 0.15); color: var(--good); }
+  .kind-play { background: rgba(184, 146, 255, 0.15); color: var(--purple); }
+
+  /* ---------- Interactive widgets ---------- */
+  .widget {
+    background: var(--bg-2);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 18px 20px;
+    margin: 18px 0;
+    box-shadow: inset 0 0 20px rgba(0,0,0,0.05);
+  }
+  .widget h4 {
+    color: var(--accent);
+    margin: 0 0 10px;
+    font-size: 1rem;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .widget-body {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+    align-items: center;
+  }
+  @media (max-width: 800px) {
+    .widget-body { grid-template-columns: 1fr; }
+  }
+  .controls { display: flex; flex-direction: column; gap: 12px; }
+  .slider-row {
+    display: grid;
+    grid-template-columns: 60px 1fr 60px;
+    align-items: center;
+    gap: 10px;
+    font-size: 0.9rem;
+  }
+  .slider-row input[type=range] {
+    accent-color: var(--accent);
+  }
+  .slider-row .val {
+    text-align: right;
+    color: var(--accent);
+    font-family: "Consolas", monospace;
+    font-weight: 600;
+  }
+  .num-input {
+    width: 60px;
+    padding: 6px;
+    background: var(--panel);
+    color: var(--text);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    font-family: "Consolas", monospace;
+    text-align: center;
+  }
+  .btn {
+    background: var(--accent);
+    color: var(--bg);
+    border: none;
+    padding: 8px 16px;
+    border-radius: 8px;
+    font-weight: 600;
+    transition: all 0.15s;
+  }
+  .btn:hover { transform: translateY(-1px); box-shadow: 0 3px 10px rgba(76,201,240,0.3); }
+  .btn.secondary { background: var(--panel); color: var(--text); border: 1px solid var(--border); }
+  .btn.danger { background: var(--danger); color: white; }
+  canvas, svg.canvas { display: block; width: 100%; height: auto; background: var(--panel); border-radius: 8px; }
+  .result-box {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 10px 14px;
+    font-family: "Consolas", monospace;
+    font-size: 0.95rem;
+  }
+  .result-box .lbl { color: var(--muted); font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.06em; }
+  .result-box .val { color: var(--accent); font-weight: 700; font-size: 1.1rem; }
+
+  /* ---------- Tables ---------- */
+  table {
+    border-collapse: collapse;
+    margin: 14px 0;
+    background: var(--panel-2);
+    border-radius: 8px;
+    overflow: hidden;
+    max-width: 78ch;
+  }
+  th, td { border: 1px solid var(--border); padding: 8px 12px; text-align: left; }
+  th { background: var(--bg-2); color: var(--accent-2); }
+
+  /* ---------- Badges ---------- */
+  .level-badge {
+    display: inline-block;
+    font-size: 0.7rem;
+    padding: 3px 10px;
+    border-radius: 12px;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+  }
+  .lvl-1 { background: rgba(123, 211, 137, 0.2); color: var(--good); }
+  .lvl-2 { background: rgba(255, 209, 102, 0.2); color: var(--warn); }
+  .lvl-3 { background: rgba(244, 162, 97, 0.2); color: #f4a261; }
+  .lvl-4 { background: rgba(255, 143, 163, 0.2); color: var(--pink); }
+
+  /* ---------- Confetti ---------- */
+  .confetti {
+    position: fixed;
+    width: 10px; height: 10px;
+    top: -20px;
+    pointer-events: none;
+    z-index: 999;
+    border-radius: 2px;
+    animation: fall linear forwards;
+  }
+  @keyframes fall {
+    to { transform: translateY(110vh) rotate(720deg); opacity: 0; }
+  }
+
+  /* ---------- Details ---------- */
+  details { margin-top: 8px; }
+  summary { cursor: pointer; color: var(--accent); user-select: none; }
+  summary:hover { text-decoration: underline; }
+
+  /* ---------- Back to top ---------- */
+  .back-to-top {
+    position: fixed;
+    bottom: 24px; right: 24px;
+    background: var(--accent);
+    color: var(--bg);
+    border: none;
+    width: 46px; height: 46px;
+    border-radius: 50%;
+    font-size: 1.3rem;
+    box-shadow: 0 4px 14px var(--shadow);
+    opacity: 0;
+    pointer-events: none;
+    transition: all 0.25s;
+    z-index: 800;
+  }
+  .back-to-top.visible { opacity: 1; pointer-events: auto; }
+  .back-to-top:hover { transform: translateY(-3px); }
+
+  /* ---------- Footer ---------- */
+  footer {
+    text-align: center;
+    padding: 30px;
+    color: var(--muted);
+    border-top: 1px solid var(--border);
+    font-size: 0.88rem;
+  }
+  footer .fun { font-size: 1.1rem; margin-top: 6px; }
+
+  /* ---------- Responsive ---------- */
+  @media (max-width: 900px) {
+    .layout { grid-template-columns: 1fr; }
+    nav.toc { position: static; height: auto; border-right: none; border-bottom: 1px solid var(--border); }
+    main { padding: 20px 16px 60px; }
+    .topbar { flex-wrap: wrap; }
+  }
+
+  /* Hide MathJax content until rendered to avoid flicker */
+  body:not(.math-ready) mjx-container { opacity: 0; }
+  mjx-container { transition: opacity 0.2s; }
+</style>
+</head>
+<body>
+
+<div class="progress-bar" id="progressBar"></div>
+
+<div class="topbar">
+  <h1>📐 Math for ML</h1>
+  <span class="stat">Progress: <b id="progressCount">0 / 13</b></span>
+  <div class="spacer"></div>
+  <div class="btn-group" title="Font size">
+    <button class="icon-btn" onclick="changeFont(-1)">A−</button>
+    <button class="icon-btn" onclick="changeFont(1)">A+</button>
+  </div>
+  <button class="icon-btn" id="themeToggle" onclick="toggleTheme()">🌙 Dark</button>
+  <button class="icon-btn" onclick="resetProgress()" title="Reset progress">↺ Reset</button>
+</div>
+
+<header class="hero">
+  <h1>Math for Machine Learning</h1>
+  <p>An interactive, absolute-beginner tutorial — from arithmetic to gradient descent</p>
+  <div class="hero-badges">
+    <span class="hero-badge">🟢 <b>4</b> foundation topics</span>
+    <span class="hero-badge">🟡 <b>4</b> beginner→intermediate</span>
+    <span class="hero-badge">🟠 <b>3</b> intermediate</span>
+    <span class="hero-badge">🔴 <b>2</b> advanced</span>
+    <span class="hero-badge">🎮 <b>5</b> interactive widgets</span>
+    <span class="hero-badge">✅ <b>13</b> quizzes</span>
+  </div>
+</header>
+
+<div class="layout">
+  <nav class="toc" id="toc">
+    <input type="text" id="toc-search" placeholder="🔍 Search topics..." oninput="filterToc(this.value)" />
+    <p class="toc-intro">Read top-to-bottom. Try each quiz before revealing answers. Check off sections as you go!</p>
+
+    <h3 class="lvl-title-1">🟢 Level 1 — Foundation</h3>
+    <ol data-lvl="1"></ol>
+
+    <h3 class="lvl-title-2">🟡 Level 2 — Beginner → Intermediate</h3>
+    <ol data-lvl="2"></ol>
+
+    <h3 class="lvl-title-3">🟠 Level 3 — Intermediate</h3>
+    <ol data-lvl="3"></ol>
+
+    <h3 class="lvl-title-4">🔴 Level 4 — Advanced</h3>
+    <ol data-lvl="4"></ol>
+
+    <h3 style="color: var(--accent-2);">🎯 Next Steps</h3>
+    <ol>
+      <li><a href="#next-steps">Where to Go From Here</a></li>
+    </ol>
+  </nav>
+
+  <main id="main">
+
+    <!-- 1. BASIC ARITHMETIC -->
+    <section class="topic" id="arithmetic" data-title="1. Basic Arithmetic" data-lvl="1">
+      <div class="section-meta">
+        <span class="reading-time">⏱ 6 min read</span>
+        <button class="complete-btn" data-target="arithmetic">Mark complete</button>
+      </div>
+      <h2>1. Basic Arithmetic <span class="level-badge lvl-1">Level 1</span></h2>
+      <p>Arithmetic is the language of numbers. Every ML model — no matter how fancy — is ultimately doing arithmetic on numbers, just <em>a lot</em> of it. Fluent arithmetic means later formulas won't feel intimidating.</p>
+
+      <h3>1.1 Order of Operations (PEMDAS / BODMAS)</h3>
+      <p>When an expression has several operations, you can't just work left-to-right. There is an agreed order:</p>
+      <ol>
+        <li><strong>P</strong>arentheses (brackets)</li>
+        <li><strong>E</strong>xponents (powers, roots)</li>
+        <li><strong>M</strong>ultiplication and <strong>D</strong>ivision (left to right)</li>
+        <li><strong>A</strong>ddition and <strong>S</strong>ubtraction (left to right)</li>
+      </ol>
+      <div class="example">
+        <div class="label">Example</div>
+        $3 + 4 \times 2 = 3 + 8 = 11$ &nbsp;(not $14$).<br/>
+        $(3 + 4) \times 2 = 14$.<br/>
+        $2 + 3^2 \times 4 = 2 + 9 \times 4 = 38$.
+      </div>
+
+      <h3>1.2 Negative Numbers</h3>
+      <p>Key rules:</p>
+      <ul>
+        <li>$-a + a = 0$</li>
+        <li>$(-a) \times (-b) = a \times b$ (negative × negative = positive)</li>
+        <li>$(-a) \times b = -(a \times b)$</li>
+      </ul>
+
+      <h3>1.3 Fractions</h3>
+      <p>A fraction $\frac{a}{b}$ represents division into $b$ equal parts.</p>
+      <ul>
+        <li>Add / subtract: same denominator required. $\frac{a}{c} + \frac{b}{c} = \frac{a+b}{c}$.</li>
+        <li>Multiply: $\frac{a}{b} \times \frac{c}{d} = \frac{ac}{bd}$.</li>
+        <li>Divide: flip the second. $\frac{a}{b} \div \frac{c}{d} = \frac{ad}{bc}$.</li>
+      </ul>
+      <div class="example">
+        <div class="label">Example</div>
+        $\frac{2}{3} + \frac{1}{4} = \frac{8}{12} + \frac{3}{12} = \frac{11}{12}$.
+      </div>
+
+      <h3>1.4 Decimals &amp; Percentages</h3>
+      <p>$37\% = \frac{37}{100} = 0.37$. Percent change: $\frac{\text{new} - \text{old}}{\text{old}} \times 100$.</p>
+      <div class="example">
+        <div class="label">Example</div>
+        A stock from $\$40$ to $\$46$: $\frac{6}{40} \times 100 = 15\%$ increase.
+      </div>
+
+      <h3>1.5 Ratios &amp; Proportions</h3>
+      <p>Proportion: $\frac{a}{b} = \frac{c}{d}$. Cross-multiply: $ad = bc$.</p>
+      <div class="example">
+        <div class="label">Example</div>
+        If 3 apples cost $\$1.20$, 8 apples cost $\frac{8 \times 1.20}{3} = \$3.20$.
+      </div>
+
+      <h3>1.6 Exponents</h3>
+      <table>
+        <tr><th>Rule</th><th>Example</th></tr>
+        <tr><td>$x^a \cdot x^b = x^{a+b}$</td><td>$2^3 \cdot 2^4 = 2^7 = 128$</td></tr>
+        <tr><td>$\frac{x^a}{x^b} = x^{a-b}$</td><td>$\frac{5^6}{5^2} = 5^4$</td></tr>
+        <tr><td>$(x^a)^b = x^{ab}$</td><td>$(3^2)^3 = 3^6$</td></tr>
+        <tr><td>$x^0 = 1$, &nbsp; $x^{-n} = \frac{1}{x^n}$</td><td>$2^{-3} = \frac{1}{8}$</td></tr>
+      </table>
+
+      <h3>1.7 Square Roots</h3>
+      <p>$\sqrt{x}$ is the non-negative number that squares to $x$. Related: $\sqrt{x} = x^{1/2}$.</p>
+
+      <div class="quiz" data-quiz="arithmetic">
+        <h4>🎯 Quick Quiz</h4>
+        <div class="q" data-answer="1">
+          <div class="q-text">1. What is $12 - 3 \times 2 + 4^2$?</div>
+          <div class="options">
+            <button class="option" data-idx="0">34</button>
+            <button class="option" data-idx="1">22</button>
+            <button class="option" data-idx="2">18</button>
+            <button class="option" data-idx="3">36</button>
+          </div>
+          <div class="feedback"></div>
+        </div>
+        <div class="q" data-answer="2">
+          <div class="q-text">2. What is 18% of 250?</div>
+          <div class="options">
+            <button class="option" data-idx="0">35</button>
+            <button class="option" data-idx="1">40</button>
+            <button class="option" data-idx="2">45</button>
+            <button class="option" data-idx="3">50</button>
+          </div>
+          <div class="feedback"></div>
+        </div>
+        <div class="q" data-answer="1">
+          <div class="q-text">3. Simplify $\frac{2^5 \cdot 2^3}{2^4}$.</div>
+          <div class="options">
+            <button class="option" data-idx="0">$2^2 = 4$</button>
+            <button class="option" data-idx="1">$2^4 = 16$</button>
+            <button class="option" data-idx="2">$2^6 = 64$</button>
+            <button class="option" data-idx="3">$2^7 = 128$</button>
+          </div>
+          <div class="feedback"></div>
+        </div>
+      </div>
+
+      <div class="resources">
+        <h4>Learning Resources</h4>
+        <ul>
+          <li><span class="kind kind-course">Course</span><a href="https://www.khanacademy.org/math/arithmetic" target="_blank" rel="noopener">Khan Academy — Arithmetic (free)</a></li>
+          <li><span class="kind kind-video">Video</span><a href="https://www.youtube.com/watch?v=dAgfnK528RA" target="_blank" rel="noopener">Math Antics — Order of Operations</a></li>
+          <li><span class="kind kind-read">Read</span><a href="https://www.mathsisfun.com/numbers/index.html" target="_blank" rel="noopener">Math is Fun — Numbers &amp; Arithmetic</a></li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- 2. ALGEBRA -->
+    <section class="topic" id="algebra" data-title="2. Algebra" data-lvl="1">
+      <div class="section-meta">
+        <span class="reading-time">⏱ 7 min read</span>
+        <button class="complete-btn" data-target="algebra">Mark complete</button>
+      </div>
+      <h2>2. Algebra <span class="level-badge lvl-1">Level 1</span></h2>
+      <p>Algebra generalizes arithmetic with letters (variables) for unknowns. Every ML model is an algebraic relationship — algebra is how we <em>write</em> the model.</p>
+
+      <h3>2.1 Variables, Constants, Coefficients</h3>
+      <ul>
+        <li><strong>Variable</strong>: a letter for an unknown ($x, y$).</li>
+        <li><strong>Constant</strong>: a fixed number ($3, \pi$).</li>
+        <li><strong>Coefficient</strong>: the number multiplying a variable ($5$ in $5x$).</li>
+      </ul>
+
+      <h3>2.2 Combining Like Terms</h3>
+      <div class="example">
+        <div class="label">Example</div>
+        $3x + 5x - 2x = 6x$. But $3x + 5x^2$ can't be combined.
+      </div>
+
+      <h3>2.3 Distributive Property</h3>
+      <p>$a(b + c) = ab + ac$ — one of the most-used rules in all of math.</p>
+      <div class="example">
+        <div class="label">Example</div>
+        $3(x + 4) = 3x + 12$. &nbsp; $-2(y - 5) = -2y + 10$.
+      </div>
+
+      <h3>2.4 Solving Linear Equations</h3>
+      <p>Goal: isolate the variable. Whatever you do to one side, do to the other.</p>
+      <div class="example">
+        <div class="label">Example — multi-step</div>
+        Solve $3(x - 2) + 4 = 16$.<br/>
+        Distribute: $3x - 6 + 4 = 16 \implies 3x - 2 = 16$.<br/>
+        Add 2: $3x = 18 \implies x = 6$.
+      </div>
+
+      <h3>2.5 Rearranging Formulas</h3>
+      <div class="example">
+        <div class="label">Example</div>
+        $y = mx + b$. Solve for $x$: $x = \frac{y - b}{m}$.
+      </div>
+
+      <h3>2.6 Systems of Equations</h3>
+      <div class="example">
+        <div class="label">Example</div>
+        $x + y = 10$ and $x - y = 4$. Add: $2x = 14 \implies x = 7$, so $y = 3$.
+      </div>
+
+      <h3>2.7 Quadratic Formula</h3>
+      <p>For $ax^2 + bx + c = 0$: &nbsp; $x = \dfrac{-b \pm \sqrt{b^2 - 4ac}}{2a}$</p>
+      <div class="example">
+        <div class="label">Example</div>
+        $x^2 - 5x + 6 = 0$: &nbsp; $x = \frac{5 \pm \sqrt{25 - 24}}{2} = \frac{5 \pm 1}{2}$. So $x = 3$ or $x = 2$.
+      </div>
+
+      <div class="ml-link">
+        <div class="label">Why this matters for ML</div>
+        The cost function for linear regression is a quadratic in the model's parameters. Understanding quadratics = understanding the shape of the "error surface" you'll walk down with gradient descent.
+      </div>
+
+      <!-- Interactive: Solve for X -->
+      <div class="widget">
+        <h4>🎮 Try It — Live Equation Solver</h4>
+        <div class="widget-body">
+          <div class="controls">
+            <p style="margin:0;">Solve for $x$: &nbsp; <b style="color:var(--accent);">a·x + b = c</b></p>
+            <div class="slider-row">
+              <label>a =</label>
+              <input type="range" id="eq-a" min="-10" max="10" step="1" value="3" />
+              <span class="val" id="eq-a-val">3</span>
+            </div>
+            <div class="slider-row">
+              <label>b =</label>
+              <input type="range" id="eq-b" min="-20" max="20" step="1" value="4" />
+              <span class="val" id="eq-b-val">4</span>
+            </div>
+            <div class="slider-row">
+              <label>c =</label>
+              <input type="range" id="eq-c" min="-30" max="30" step="1" value="19" />
+              <span class="val" id="eq-c-val">19</span>
+            </div>
+          </div>
+          <div class="result-box">
+            <div class="lbl">Equation</div>
+            <div id="eq-expr" style="font-size:1.15rem; margin: 6px 0;">3x + 4 = 19</div>
+            <div class="lbl" style="margin-top:12px;">Solution</div>
+            <div class="val" id="eq-solution">x = 5</div>
+            <div id="eq-steps" style="color: var(--muted); font-size: 0.85rem; margin-top: 8px;"></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="quiz" data-quiz="algebra">
+        <h4>🎯 Quick Quiz</h4>
+        <div class="q" data-answer="2">
+          <div class="q-text">1. Solve $5x - 7 = 2x + 8$.</div>
+          <div class="options">
+            <button class="option" data-idx="0">$x = 3$</button>
+            <button class="option" data-idx="1">$x = 4$</button>
+            <button class="option" data-idx="2">$x = 5$</button>
+            <button class="option" data-idx="3">$x = 6$</button>
+          </div>
+          <div class="feedback"></div>
+        </div>
+        <div class="q" data-answer="1">
+          <div class="q-text">2. Solve $x^2 - 4x - 5 = 0$.</div>
+          <div class="options">
+            <button class="option" data-idx="0">$x = 1$ or $-5$</button>
+            <button class="option" data-idx="1">$x = 5$ or $-1$</button>
+            <button class="option" data-idx="2">$x = 2$ or $-2$</button>
+            <button class="option" data-idx="3">$x = 5$ only</button>
+          </div>
+          <div class="feedback"></div>
+        </div>
+      </div>
+
+      <div class="resources">
+        <h4>Learning Resources</h4>
+        <ul>
+          <li><span class="kind kind-course">Course</span><a href="https://www.khanacademy.org/math/algebra" target="_blank" rel="noopener">Khan Academy — Algebra 1</a></li>
+          <li><span class="kind kind-video">Video</span><a href="https://www.youtube.com/watch?v=NybHckSEQBI" target="_blank" rel="noopener">Algebra Basics — Math Antics</a></li>
+          <li><span class="kind kind-play">Playlist</span><a href="https://www.youtube.com/playlist?list=PLDesaqWTN6ESk16YRmzuJ8f6-rnuy0Ry7" target="_blank" rel="noopener">Professor Leonard — Algebra</a></li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- 3. FUNCTIONS -->
+    <section class="topic" id="functions" data-title="3. Functions" data-lvl="1">
+      <div class="section-meta">
+        <span class="reading-time">⏱ 6 min read</span>
+        <button class="complete-btn" data-target="functions">Mark complete</button>
+      </div>
+      <h2>3. Functions <span class="level-badge lvl-1">Level 1</span></h2>
+      <p>A function is a rule: input goes in → exactly one output comes out. Every ML model is literally a function.</p>
+
+      <h3>3.1 Notation</h3>
+      <p>$f(x)$ = "the output of $f$ when the input is $x$". Domain = valid inputs; Range = possible outputs.</p>
+
+      <h3>3.2 Evaluating</h3>
+      <div class="example">
+        <div class="label">Example</div>
+        If $f(x) = x^2 - 3x + 1$: $f(4) = 16 - 12 + 1 = 5$; $f(-2) = 4 + 6 + 1 = 11$.
+      </div>
+
+      <h3>3.3 Linear Functions</h3>
+      <p>$f(x) = mx + b$. Straight line, constant rate of change.</p>
+      <div class="ml-link">
+        <div class="label">ML Connection</div>
+        Linear regression is literally $\hat{y} = wx + b$. Machine learning trains $w$ and $b$ from data. That's it.
+      </div>
+
+      <h3>3.4 Quadratic Functions</h3>
+      <p>$f(x) = ax^2 + bx + c$. Parabola. If $a > 0$ opens up (has minimum). Vertex at $x = -\frac{b}{2a}$.</p>
+
+      <h3>3.5 Function Composition</h3>
+      <p>$(f \circ g)(x) = f(g(x))$. A neural network is a giant composition — that's what "deep" means.</p>
+
+      <h3>3.6 Other Shapes</h3>
+      <ul>
+        <li><strong>Exponential</strong> $e^x$ — grows fast.</li>
+        <li><strong>Logarithm</strong> $\log(x)$ — grows slowly.</li>
+        <li><strong>Sigmoid</strong> $\sigma(x) = \frac{1}{1 + e^{-x}}$ — squashes any input into $(0, 1)$; used in classification.</li>
+      </ul>
+
+      <!-- Interactive: Function Plotter -->
+      <div class="widget">
+        <h4>🎮 Try It — Function Plotter</h4>
+        <div class="widget-body">
+          <div class="controls">
+            <div class="slider-row">
+              <label>Type</label>
+              <select id="fn-type" style="padding: 6px; border-radius: 6px; background: var(--panel); color: var(--text); border: 1px solid var(--border);">
+                <option value="linear">Linear (ax + b)</option>
+                <option value="quadratic" selected>Quadratic (ax² + bx + c)</option>
+                <option value="sigmoid">Sigmoid</option>
+                <option value="exp">Exponential</option>
+                <option value="log">Logarithm</option>
+              </select>
+              <span></span>
+            </div>
+            <div class="slider-row" id="fn-a-row">
+              <label>a =</label>
+              <input type="range" id="fn-a" min="-3" max="3" step="0.1" value="1" />
+              <span class="val" id="fn-a-val">1</span>
+            </div>
+            <div class="slider-row" id="fn-b-row">
+              <label>b =</label>
+              <input type="range" id="fn-b" min="-5" max="5" step="0.1" value="0" />
+              <span class="val" id="fn-b-val">0</span>
+            </div>
+            <div class="slider-row" id="fn-c-row">
+              <label>c =</label>
+              <input type="range" id="fn-c" min="-5" max="5" step="0.1" value="0" />
+              <span class="val" id="fn-c-val">0</span>
+            </div>
+            <div class="result-box">
+              <div class="lbl">Function</div>
+              <div id="fn-label" style="color: var(--accent); font-size: 1.05rem; margin-top: 4px;">f(x) = x²</div>
+            </div>
+          </div>
+          <canvas id="fn-canvas" width="480" height="360"></canvas>
+        </div>
+      </div>
+
+      <div class="quiz" data-quiz="functions">
+        <h4>🎯 Quick Quiz</h4>
+        <div class="q" data-answer="2">
+          <div class="q-text">1. If $f(x) = 3x^2 + 2$, what is $f(-1)$?</div>
+          <div class="options">
+            <button class="option" data-idx="0">$-1$</button>
+            <button class="option" data-idx="1">$1$</button>
+            <button class="option" data-idx="2">$5$</button>
+            <button class="option" data-idx="3">$-5$</button>
+          </div>
+          <div class="feedback"></div>
+        </div>
+        <div class="q" data-answer="1">
+          <div class="q-text">2. If $f(x) = x + 3$ and $g(x) = 2x$, what is $f(g(4))$?</div>
+          <div class="options">
+            <button class="option" data-idx="0">10</button>
+            <button class="option" data-idx="1">11</button>
+            <button class="option" data-idx="2">14</button>
+            <button class="option" data-idx="3">7</button>
+          </div>
+          <div class="feedback"></div>
+        </div>
+      </div>
+
+      <div class="resources">
+        <h4>Learning Resources</h4>
+        <ul>
+          <li><span class="kind kind-course">Course</span><a href="https://www.khanacademy.org/math/algebra/x2f8bb11595b61c86:functions" target="_blank" rel="noopener">Khan Academy — Functions</a></li>
+          <li><span class="kind kind-video">Video</span><a href="https://www.youtube.com/watch?v=52tpYl2tTqk" target="_blank" rel="noopener">Introduction to Functions — Math Antics</a></li>
+          <li><span class="kind kind-play">Interactive</span><a href="https://www.desmos.com/calculator" target="_blank" rel="noopener">Desmos — Free Graphing Calculator</a></li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- 4. GRAPHS -->
+    <section class="topic" id="graphs" data-title="4. Graphs" data-lvl="1">
+      <div class="section-meta">
+        <span class="reading-time">⏱ 5 min read</span>
+        <button class="complete-btn" data-target="graphs">Mark complete</button>
+      </div>
+      <h2>4. Graphs <span class="level-badge lvl-1">Level 1</span></h2>
+      <p>A graph turns a function into a picture. Seeing math visually accelerates intuition.</p>
+
+      <h3>4.1 The Cartesian Plane</h3>
+      <ul>
+        <li>Two axes meet at the origin $(0, 0)$.</li>
+        <li><strong>X-axis</strong>: horizontal (input). <strong>Y-axis</strong>: vertical (output).</li>
+        <li>A point is $(x, y)$.</li>
+      </ul>
+
+      <h3>4.2 Slope</h3>
+      <p>$m = \dfrac{y_2 - y_1}{x_2 - x_1}$ — rise over run.</p>
+      <ul>
+        <li>$m > 0$: goes up-right. $m < 0$: down-right. $m = 0$: horizontal.</li>
+      </ul>
+      <div class="example">
+        <div class="label">Example</div>
+        Points $(1, 2)$ and $(5, 10)$: $m = \frac{8}{4} = 2$.
+      </div>
+
+      <h3>4.3 Slope-Intercept Form</h3>
+      <p>$y = mx + b$: $m$ = slope, $b$ = y-intercept (where the line crosses $y$-axis).</p>
+
+      <div class="ml-link">
+        <div class="label">ML Connection</div>
+        Cost functions in ML are curves (usually valleys). Training = "rolling downhill". The slope at your spot tells you which direction to move.
+      </div>
+
+      <!-- Interactive: Slope Explorer -->
+      <div class="widget">
+        <h4>🎮 Try It — Slope Explorer (y = mx + b)</h4>
+        <div class="widget-body">
+          <div class="controls">
+            <div class="slider-row">
+              <label>m =</label>
+              <input type="range" id="slope-m" min="-5" max="5" step="0.1" value="1" />
+              <span class="val" id="slope-m-val">1.0</span>
+            </div>
+            <div class="slider-row">
+              <label>b =</label>
+              <input type="range" id="slope-b" min="-5" max="5" step="0.1" value="0" />
+              <span class="val" id="slope-b-val">0.0</span>
+            </div>
+            <div class="result-box">
+              <div class="lbl">Equation</div>
+              <div class="val" id="slope-eq">y = 1.0 x + 0.0</div>
+              <div class="lbl" style="margin-top: 8px;">Interpretation</div>
+              <div id="slope-interp" style="font-size: 0.9rem; margin-top: 4px;"></div>
+            </div>
+          </div>
+          <canvas id="slope-canvas" width="480" height="360"></canvas>
+        </div>
+      </div>
+
+      <div class="quiz" data-quiz="graphs">
+        <h4>🎯 Quick Quiz</h4>
+        <div class="q" data-answer="0">
+          <div class="q-text">1. Slope between $(-2, 3)$ and $(4, -9)$?</div>
+          <div class="options">
+            <button class="option" data-idx="0">$-2$</button>
+            <button class="option" data-idx="1">$2$</button>
+            <button class="option" data-idx="2">$-6$</button>
+            <button class="option" data-idx="3">$\frac{1}{2}$</button>
+          </div>
+          <div class="feedback"></div>
+        </div>
+        <div class="q" data-answer="2">
+          <div class="q-text">2. In $y = -3x + 7$, what's the y-intercept?</div>
+          <div class="options">
+            <button class="option" data-idx="0">$-3$</button>
+            <button class="option" data-idx="1">$3$</button>
+            <button class="option" data-idx="2">$7$</button>
+            <button class="option" data-idx="3">$0$</button>
+          </div>
+          <div class="feedback"></div>
+        </div>
+      </div>
+
+      <div class="resources">
+        <h4>Learning Resources</h4>
+        <ul>
+          <li><span class="kind kind-course">Course</span><a href="https://www.khanacademy.org/math/algebra/x2f8bb11595b61c86:linear-equations-graphs" target="_blank" rel="noopener">Khan Academy — Graphing Linear Equations</a></li>
+          <li><span class="kind kind-play">Interactive</span><a href="https://www.desmos.com/calculator" target="_blank" rel="noopener">Desmos — Graphing Calculator</a></li>
+          <li><span class="kind kind-video">Video</span><a href="https://www.youtube.com/watch?v=2UrcUfBizyw" target="_blank" rel="noopener">Slope and Rate of Change — Math Antics</a></li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- 5. SUMMATION -->
+    <section class="topic" id="summation" data-title="5. Summation (Σ)" data-lvl="2">
+      <div class="section-meta">
+        <span class="reading-time">⏱ 4 min read</span>
+        <button class="complete-btn" data-target="summation">Mark complete</button>
+      </div>
+      <h2>5. Summation (Σ) <span class="level-badge lvl-2">Level 2</span></h2>
+      <p>Sigma ($\Sigma$) is a compact way to write "add up a bunch of things". Nearly every ML formula uses it.</p>
+
+      <h3>5.1 The Notation</h3>
+      <p>$\displaystyle\sum_{i=1}^{n} x_i$ means "start with $i=1$, add $x_i$, increase $i$ by 1, repeat until $i=n$". It's a for-loop that adds.</p>
+
+      <div class="example">
+        <div class="label">Example</div>
+        $\sum_{i=1}^{5} i = 1 + 2 + 3 + 4 + 5 = 15$.
+      </div>
+      <div class="example">
+        <div class="label">Example</div>
+        $\sum_{i=1}^{4} i^2 = 1 + 4 + 9 + 16 = 30$.
+      </div>
+
+      <h3>5.2 Properties</h3>
+      <ul>
+        <li>Constants pull out: $\sum c x_i = c \sum x_i$.</li>
+        <li>Sum of a constant: $\sum_{i=1}^{n} c = nc$.</li>
+        <li>Splits over addition: $\sum (x_i + y_i) = \sum x_i + \sum y_i$.</li>
+      </ul>
+
+      <h3>5.3 Mean Squared Error (MSE)</h3>
+      <p>$\text{MSE} = \dfrac{1}{n} \displaystyle\sum_{i=1}^{n} (\hat{y}_i - y_i)^2$ — the classic ML loss function.</p>
+
+      <div class="ml-link">
+        <div class="label">ML Connection</div>
+        Whenever you see a Greek $\Sigma$ in an ML paper, whisper: "it's a for-loop that adds". You'll unlock 80% of formulas.
+      </div>
+
+      <div class="quiz" data-quiz="summation">
+        <h4>🎯 Quick Quiz</h4>
+        <div class="q" data-answer="2">
+          <div class="q-text">1. Compute $\sum_{i=1}^{6} i$.</div>
+          <div class="options">
+            <button class="option" data-idx="0">15</button>
+            <button class="option" data-idx="1">18</button>
+            <button class="option" data-idx="2">21</button>
+            <button class="option" data-idx="3">28</button>
+          </div>
+          <div class="feedback"></div>
+        </div>
+        <div class="q" data-answer="1">
+          <div class="q-text">2. Given predictions $\hat{y}=[3,5,8]$ and true $y=[2,5,10]$, what is MSE?</div>
+          <div class="options">
+            <button class="option" data-idx="0">$1$</button>
+            <button class="option" data-idx="1">$5/3 \approx 1.67$</button>
+            <button class="option" data-idx="2">$5$</button>
+            <button class="option" data-idx="3">$3$</button>
+          </div>
+          <div class="feedback"></div>
+        </div>
+      </div>
+
+      <div class="resources">
+        <h4>Learning Resources</h4>
+        <ul>
+          <li><span class="kind kind-video">Video</span><a href="https://www.youtube.com/watch?v=UZ7iXse5RcE" target="_blank" rel="noopener">Sigma Notation — Eddie Woo</a></li>
+          <li><span class="kind kind-read">Read</span><a href="https://www.mathsisfun.com/algebra/sigma-notation.html" target="_blank" rel="noopener">Math is Fun — Sigma Notation</a></li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- 6. AVERAGES -->
+    <section class="topic" id="averages" data-title="6. Averages" data-lvl="2">
+      <div class="section-meta">
+        <span class="reading-time">⏱ 4 min read</span>
+        <button class="complete-btn" data-target="averages">Mark complete</button>
+      </div>
+      <h2>6. Averages <span class="level-badge lvl-2">Level 2</span></h2>
+      <p>"Average" isn't one thing — it's a family of tools for summarizing many values into one number.</p>
+
+      <h3>6.1 Mean</h3>
+      <p>$\bar{x} = \dfrac{1}{n}\sum x_i$. Best for symmetric data. Weakness: sensitive to outliers.</p>
+
+      <h3>6.2 Median</h3>
+      <p>Sort; take the middle value. Robust to outliers.</p>
+
+      <h3>6.3 Mode</h3>
+      <p>Most frequent value. Useful for categorical data.</p>
+
+      <h3>6.4 Weighted Average</h3>
+      <p>$\bar{x}_w = \dfrac{\sum w_i x_i}{\sum w_i}$.</p>
+      <div class="example">
+        <div class="label">Example — Course grade</div>
+        Quizzes 88 (20%), midterm 75 (30%), final 92 (50%): $\bar{x}_w = 0.2(88) + 0.3(75) + 0.5(92) = 86.1$.
+      </div>
+
+      <h3>6.5 Compare</h3>
+      <p>Data: $[1, 2, 2, 3, 100]$. Mean = 21.6 (skewed), Median = 2, Mode = 2.</p>
+
+      <div class="ml-link">
+        <div class="label">ML Connection</div>
+        The mean minimizes squared error (MSE). The median minimizes absolute error (MAE). Different losses → different "averages".
+      </div>
+
+      <div class="quiz" data-quiz="averages">
+        <h4>🎯 Quick Quiz</h4>
+        <div class="q" data-answer="1">
+          <div class="q-text">1. Median of $[3, 8, 10, 12, 15]$?</div>
+          <div class="options">
+            <button class="option" data-idx="0">$8$</button>
+            <button class="option" data-idx="1">$10$</button>
+            <button class="option" data-idx="2">$9.6$</button>
+            <button class="option" data-idx="3">$12$</button>
+          </div>
+          <div class="feedback"></div>
+        </div>
+        <div class="q" data-answer="3">
+          <div class="q-text">2. Weighted average of $[80, 90, 70]$ with weights $[0.5, 0.3, 0.2]$?</div>
+          <div class="options">
+            <button class="option" data-idx="0">80</button>
+            <button class="option" data-idx="1">85</button>
+            <button class="option" data-idx="2">83</button>
+            <button class="option" data-idx="3">81</button>
+          </div>
+          <div class="feedback"></div>
+        </div>
+      </div>
+
+      <div class="resources">
+        <h4>Learning Resources</h4>
+        <ul>
+          <li><span class="kind kind-course">Course</span><a href="https://www.khanacademy.org/math/statistics-probability/summarizing-quantitative-data" target="_blank" rel="noopener">Khan Academy — Summarizing Data</a></li>
+          <li><span class="kind kind-video">Video</span><a href="https://www.youtube.com/watch?v=B1i6nZCg_o4" target="_blank" rel="noopener">Mean, Median, Mode — Math Antics</a></li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- 7. PROBABILITY -->
+    <section class="topic" id="probability" data-title="7. Probability" data-lvl="2">
+      <div class="section-meta">
+        <span class="reading-time">⏱ 6 min read</span>
+        <button class="complete-btn" data-target="probability">Mark complete</button>
+      </div>
+      <h2>7. Probability <span class="level-badge lvl-2">Level 2</span></h2>
+      <p>Probability quantifies uncertainty. ML models often output probabilities: "80% chance this email is spam".</p>
+
+      <h3>7.1 Fundamentals</h3>
+      <p>$P(A) = \dfrac{\text{favorable outcomes}}{\text{total outcomes}}$. Range: $[0, 1]$.</p>
+
+      <h3>7.2 Complement Rule</h3>
+      <p>$P(\text{not } A) = 1 - P(A)$.</p>
+
+      <h3>7.3 Independent Events (AND)</h3>
+      <p>$P(A \text{ and } B) = P(A) \cdot P(B)$ if independent.</p>
+      <div class="example">
+        <div class="label">Example</div>
+        3 heads in a row: $(1/2)^3 = 1/8$.
+      </div>
+
+      <h3>7.4 Addition Rule (OR)</h3>
+      <p>$P(A \text{ or } B) = P(A) + P(B) - P(A \text{ and } B)$.</p>
+
+      <h3>7.5 Conditional Probability</h3>
+      <p>$P(A \mid B) = \dfrac{P(A \text{ and } B)}{P(B)}$.</p>
+
+      <h3>7.6 Bayes' Theorem</h3>
+      <p>$P(A \mid B) = \dfrac{P(B \mid A) \cdot P(A)}{P(B)}$ — flip a conditional. Used in spam filters, medical tests, Naive Bayes.</p>
+
+      <div class="ml-link">
+        <div class="label">ML Connection</div>
+        Logistic regression outputs $P(y=1 \mid x)$. Softmax gives class probabilities. Naive Bayes applies Bayes' theorem directly.
+      </div>
+
+      <div class="quiz" data-quiz="probability">
+        <h4>🎯 Quick Quiz</h4>
+        <div class="q" data-answer="0">
+          <div class="q-text">1. Two dice — probability both show 6?</div>
+          <div class="options">
+            <button class="option" data-idx="0">$1/36$</button>
+            <button class="option" data-idx="1">$1/12$</button>
+            <button class="option" data-idx="2">$1/6$</button>
+            <button class="option" data-idx="3">$2/12$</button>
+          </div>
+          <div class="feedback"></div>
+        </div>
+        <div class="q" data-answer="2">
+          <div class="q-text">2. Two rolls — probability of at least one 6?</div>
+          <div class="options">
+            <button class="option" data-idx="0">$1/6$</button>
+            <button class="option" data-idx="1">$2/6$</button>
+            <button class="option" data-idx="2">$11/36$</button>
+            <button class="option" data-idx="3">$1/3$</button>
+          </div>
+          <div class="feedback"></div>
+        </div>
+      </div>
+
+      <div class="resources">
+        <h4>Learning Resources</h4>
+        <ul>
+          <li><span class="kind kind-course">Course</span><a href="https://www.khanacademy.org/math/statistics-probability/probability-library" target="_blank" rel="noopener">Khan Academy — Probability Library</a></li>
+          <li><span class="kind kind-video">Video</span><a href="https://www.youtube.com/watch?v=HZGCoVF3YvM" target="_blank" rel="noopener">3Blue1Brown — Bayes Theorem Visualized</a></li>
+          <li><span class="kind kind-play">Interactive</span><a href="https://seeing-theory.brown.edu/basic-probability/index.html" target="_blank" rel="noopener">Seeing Theory — Probability (Brown Univ.)</a></li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- 8. STATISTICS -->
+    <section class="topic" id="statistics" data-title="8. Statistics" data-lvl="2">
+      <div class="section-meta">
+        <span class="reading-time">⏱ 7 min read</span>
+        <button class="complete-btn" data-target="statistics">Mark complete</button>
+      </div>
+      <h2>8. Statistics <span class="level-badge lvl-2">Level 2</span></h2>
+      <p>Statistics is the science of learning from data. ML is applied statistics with more compute.</p>
+
+      <h3>8.1 Population vs Sample</h3>
+      <p>Population = everything. Sample = subset you measured. We estimate population properties from samples.</p>
+
+      <h3>8.2 Variance</h3>
+      <p>Population: $\sigma^2 = \frac{1}{n}\sum (x_i - \mu)^2$. Sample: $s^2 = \frac{1}{n-1}\sum (x_i - \bar{x})^2$.</p>
+
+      <h3>8.3 Standard Deviation</h3>
+      <p>$\sigma = \sqrt{\sigma^2}$. Same units as data → interpretable.</p>
+
+      <h3>8.4 Normal Distribution</h3>
+      <p>Bell curve. <strong>68–95–99.7 rule</strong>: ~68% within $\pm 1\sigma$, ~95% within $\pm 2\sigma$, ~99.7% within $\pm 3\sigma$.</p>
+
+      <h3>8.5 Z-Score</h3>
+      <p>$z = \dfrac{x - \mu}{\sigma}$ — how many std devs from the mean.</p>
+      <div class="example">
+        <div class="label">Example</div>
+        Class avg 70, $\sigma$ 10. You score 85. $z = 1.5$ → top ~7%.
+      </div>
+
+      <h3>8.6 Correlation</h3>
+      <p>From $-1$ to $+1$. <strong>Correlation ≠ causation!</strong></p>
+
+      <div class="ml-link">
+        <div class="label">ML Connection</div>
+        Preprocessing usually standardizes features to zero mean, unit variance (z-scores). Distributions matter — many models assume roughly Gaussian data.
+      </div>
+
+      <div class="quiz" data-quiz="statistics">
+        <h4>🎯 Quick Quiz</h4>
+        <div class="q" data-answer="1">
+          <div class="q-text">1. Scores normal, $\mu=75, \sigma=8$. What % scored between 67 and 83?</div>
+          <div class="options">
+            <button class="option" data-idx="0">~50%</button>
+            <button class="option" data-idx="1">~68%</button>
+            <button class="option" data-idx="2">~95%</button>
+            <button class="option" data-idx="3">~99.7%</button>
+          </div>
+          <div class="feedback"></div>
+        </div>
+        <div class="q" data-answer="2">
+          <div class="q-text">2. Your height 180 cm; mean 172, $\sigma$ 7. Z-score?</div>
+          <div class="options">
+            <button class="option" data-idx="0">0.8</button>
+            <button class="option" data-idx="1">1.0</button>
+            <button class="option" data-idx="2">1.14</button>
+            <button class="option" data-idx="3">2.28</button>
+          </div>
+          <div class="feedback"></div>
+        </div>
+      </div>
+
+      <div class="resources">
+        <h4>Learning Resources</h4>
+        <ul>
+          <li><span class="kind kind-course">Course</span><a href="https://www.khanacademy.org/math/statistics-probability" target="_blank" rel="noopener">Khan Academy — Statistics &amp; Probability</a></li>
+          <li><span class="kind kind-play">Playlist ⭐</span><a href="https://www.youtube.com/playlist?list=PLblh5JKOoLUK0FLuzwntyYI10UQFUhsY9" target="_blank" rel="noopener">StatQuest — Statistics Fundamentals</a></li>
+          <li><span class="kind kind-play">Interactive</span><a href="https://seeing-theory.brown.edu/" target="_blank" rel="noopener">Seeing Theory — Visual Statistics</a></li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- 9. VECTORS -->
+    <section class="topic" id="vectors" data-title="9. Vectors" data-lvl="3">
+      <div class="section-meta">
+        <span class="reading-time">⏱ 7 min read</span>
+        <button class="complete-btn" data-target="vectors">Mark complete</button>
+      </div>
+      <h2>9. Vectors <span class="level-badge lvl-3">Level 3</span></h2>
+      <p>A vector is an ordered list of numbers. In ML, a data example is a vector.</p>
+
+      <h3>9.1 Representation</h3>
+      <p>$\mathbf{v} = \begin{bmatrix} 2 \\ 5 \\ 3 \end{bmatrix}$ or $(2, 5, 3)$. Dimension = count. Geometrically, an arrow from origin.</p>
+
+      <h3>9.2 Scalar Multiplication</h3>
+      <p>$3 \cdot (2, -1, 4) = (6, -3, 12)$. Scales the arrow.</p>
+
+      <h3>9.3 Addition / Subtraction</h3>
+      <p>Element-wise. $(1, 2, 3) + (4, 5, 6) = (5, 7, 9)$. Geometrically: tip-to-tail.</p>
+
+      <h3>9.4 Magnitude</h3>
+      <p>$\|\mathbf{v}\| = \sqrt{v_1^2 + \cdots + v_n^2}$. $\|(3, 4)\| = 5$.</p>
+
+      <h3>9.5 Unit Vectors</h3>
+      <p>$\hat{\mathbf{v}} = \dfrac{\mathbf{v}}{\|\mathbf{v}\|}$. Length 1, same direction.</p>
+
+      <h3>9.6 Dot Product</h3>
+      <p>$\mathbf{a} \cdot \mathbf{b} = \sum a_i b_i = \|\mathbf{a}\| \|\mathbf{b}\| \cos\theta$.</p>
+      <ul>
+        <li>Positive → similar directions. Zero → perpendicular. Negative → opposite.</li>
+      </ul>
+
+      <h3>9.7 Cosine Similarity</h3>
+      <p>$\cos\theta = \dfrac{\mathbf{a} \cdot \mathbf{b}}{\|\mathbf{a}\| \|\mathbf{b}\|}$ — <strong>the</strong> similarity metric in NLP &amp; recommenders.</p>
+
+      <div class="ml-link">
+        <div class="label">ML Connection</div>
+        Prediction in linear regression: $\hat{y} = \mathbf{w} \cdot \mathbf{x} + b$. In embeddings, "king − man + woman ≈ queen" is vector arithmetic.
+      </div>
+
+      <!-- Interactive: Dot Product Calculator -->
+      <div class="widget">
+        <h4>🎮 Try It — Dot Product &amp; Similarity</h4>
+        <div class="widget-body">
+          <div class="controls">
+            <p style="margin: 0;">Two 2D vectors:</p>
+            <div class="slider-row">
+              <label>a =</label>
+              <div style="display:flex; gap:6px;">
+                (<input class="num-input" id="dot-a1" value="3" />,
+                <input class="num-input" id="dot-a2" value="1" />)
+              </div>
+              <span></span>
+            </div>
+            <div class="slider-row">
+              <label>b =</label>
+              <div style="display:flex; gap:6px;">
+                (<input class="num-input" id="dot-b1" value="2" />,
+                <input class="num-input" id="dot-b2" value="4" />)
+              </div>
+              <span></span>
+            </div>
+            <div class="result-box">
+              <div class="lbl">Dot product</div>
+              <div class="val" id="dot-result">10</div>
+              <div class="lbl" style="margin-top:8px;">Cosine similarity</div>
+              <div class="val" id="cos-result">0.71</div>
+              <div class="lbl" style="margin-top:8px;">Angle</div>
+              <div class="val" id="angle-result">45°</div>
+            </div>
+          </div>
+          <canvas id="vec-canvas" width="480" height="360"></canvas>
+        </div>
+      </div>
+
+      <div class="quiz" data-quiz="vectors">
+        <h4>🎯 Quick Quiz</h4>
+        <div class="q" data-answer="2">
+          <div class="q-text">1. Find $\|(1, 2, 2, 4)\|$.</div>
+          <div class="options">
+            <button class="option" data-idx="0">$3$</button>
+            <button class="option" data-idx="1">$4$</button>
+            <button class="option" data-idx="2">$5$</button>
+            <button class="option" data-idx="3">$\sqrt{9}$</button>
+          </div>
+          <div class="feedback"></div>
+        </div>
+        <div class="q" data-answer="0">
+          <div class="q-text">2. Are $(1, 2)$ and $(-2, 1)$ perpendicular?</div>
+          <div class="options">
+            <button class="option" data-idx="0">Yes (dot = 0)</button>
+            <button class="option" data-idx="1">No (dot &gt; 0)</button>
+            <button class="option" data-idx="2">No (dot &lt; 0)</button>
+            <button class="option" data-idx="3">Can't tell</button>
+          </div>
+          <div class="feedback"></div>
+        </div>
+      </div>
+
+      <div class="resources">
+        <h4>Learning Resources</h4>
+        <ul>
+          <li><span class="kind kind-play">Playlist ⭐</span><a href="https://www.youtube.com/playlist?list=PLZHQObOWTQDPD3MizzM2xVFitgF8hE_ab" target="_blank" rel="noopener">3Blue1Brown — Essence of Linear Algebra</a></li>
+          <li><span class="kind kind-video">Video</span><a href="https://www.youtube.com/watch?v=fNk_zzaMoSs" target="_blank" rel="noopener">3Blue1Brown — Vectors, what are they?</a></li>
+          <li><span class="kind kind-video">Video</span><a href="https://www.youtube.com/watch?v=LyGKycYT2v0" target="_blank" rel="noopener">3Blue1Brown — Dot products</a></li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- 10. MATRICES -->
+    <section class="topic" id="matrices" data-title="10. Matrices" data-lvl="3">
+      <div class="section-meta">
+        <span class="reading-time">⏱ 6 min read</span>
+        <button class="complete-btn" data-target="matrices">Mark complete</button>
+      </div>
+      <h2>10. Matrices <span class="level-badge lvl-3">Level 3</span></h2>
+      <p>A rectangular grid of numbers. Often: rows = examples, columns = features.</p>
+
+      <h3>10.1 Anatomy</h3>
+      <p>$A = \begin{bmatrix} 1 & 2 & 3 \\ 4 & 5 & 6 \end{bmatrix}$ — a $2 \times 3$ matrix. $a_{ij}$ = row $i$, column $j$.</p>
+
+      <h3>10.2 Addition</h3>
+      <p>Element-wise, same shape required.</p>
+
+      <h3>10.3 Multiplication</h3>
+      <p>$C = AB$: $A$ is $m \times k$, $B$ is $k \times n$, $C$ is $m \times n$. Entry $C_{ij}$ = dot of row $i$ of $A$ with column $j$ of $B$.</p>
+      <div class="example">
+        <div class="label">Example</div>
+        $\begin{bmatrix} 1 & 2 \\ 3 & 4 \end{bmatrix} \begin{bmatrix} 5 & 6 \\ 7 & 8 \end{bmatrix} = \begin{bmatrix} 19 & 22 \\ 43 & 50 \end{bmatrix}$
+      </div>
+      <div class="warn"><strong>Not commutative!</strong> Usually $AB \neq BA$.</div>
+
+      <h3>10.4 Transpose</h3>
+      <p>$A^T$: rows become columns. $(AB)^T = B^T A^T$.</p>
+
+      <h3>10.5 Identity</h3>
+      <p>$I$ has 1s on diagonal. $AI = A$.</p>
+
+      <div class="ml-link">
+        <div class="label">ML Connection</div>
+        A batch of $n$ examples with $d$ features is an $n \times d$ matrix $X$. Predictions: $\hat{\mathbf{y}} = X\mathbf{w} + b$. Neural net layer: $\mathbf{a}_{\text{next}} = \sigma(W\mathbf{a} + \mathbf{b})$. GPUs = giant matrix multipliers.
+      </div>
+
+      <!-- Interactive: 2x2 Matrix Multiplier -->
+      <div class="widget">
+        <h4>🎮 Try It — 2×2 Matrix Multiplier</h4>
+        <div class="widget-body">
+          <div class="controls">
+            <p style="margin:0;">A × B:</p>
+            <div>
+              <div class="lbl" style="color:var(--muted); font-size:0.8rem;">Matrix A</div>
+              <div style="display:grid; grid-template-columns:1fr 1fr; gap:6px; max-width:150px;">
+                <input class="num-input" id="mat-a11" value="1"/>
+                <input class="num-input" id="mat-a12" value="2"/>
+                <input class="num-input" id="mat-a21" value="3"/>
+                <input class="num-input" id="mat-a22" value="4"/>
+              </div>
+            </div>
+            <div>
+              <div class="lbl" style="color:var(--muted); font-size:0.8rem;">Matrix B</div>
+              <div style="display:grid; grid-template-columns:1fr 1fr; gap:6px; max-width:150px;">
+                <input class="num-input" id="mat-b11" value="5"/>
+                <input class="num-input" id="mat-b12" value="6"/>
+                <input class="num-input" id="mat-b21" value="7"/>
+                <input class="num-input" id="mat-b22" value="8"/>
+              </div>
+            </div>
+          </div>
+          <div class="result-box" style="font-size:1rem;">
+            <div class="lbl">Result A×B</div>
+            <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px; max-width:200px; margin-top:8px;">
+              <div class="val" id="mat-c11">19</div>
+              <div class="val" id="mat-c12">22</div>
+              <div class="val" id="mat-c21">43</div>
+              <div class="val" id="mat-c22">50</div>
+            </div>
+            <div style="margin-top:12px; font-size:0.82rem; color:var(--muted);" id="mat-steps"></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="quiz" data-quiz="matrices">
+        <h4>🎯 Quick Quiz</h4>
+        <div class="q" data-answer="1">
+          <div class="q-text">1. $\begin{bmatrix} 1 & 2 \\ 3 & 4 \end{bmatrix} \begin{bmatrix} 2 \\ -1 \end{bmatrix} = ?$</div>
+          <div class="options">
+            <button class="option" data-idx="0">$\begin{bmatrix} 2 \\ 3 \end{bmatrix}$</button>
+            <button class="option" data-idx="1">$\begin{bmatrix} 0 \\ 2 \end{bmatrix}$</button>
+            <button class="option" data-idx="2">$\begin{bmatrix} 4 \\ 6 \end{bmatrix}$</button>
+            <button class="option" data-idx="3">$\begin{bmatrix} -2 \\ -4 \end{bmatrix}$</button>
+          </div>
+          <div class="feedback"></div>
+        </div>
+        <div class="q" data-answer="0">
+          <div class="q-text">2. Is matrix multiplication commutative in general?</div>
+          <div class="options">
+            <button class="option" data-idx="0">No</button>
+            <button class="option" data-idx="1">Yes</button>
+            <button class="option" data-idx="2">Only for square matrices</button>
+            <button class="option" data-idx="3">Only for identity</button>
+          </div>
+          <div class="feedback"></div>
+        </div>
+      </div>
+
+      <div class="resources">
+        <h4>Learning Resources</h4>
+        <ul>
+          <li><span class="kind kind-video">Video ⭐</span><a href="https://www.youtube.com/watch?v=XkY2DOUCWMU" target="_blank" rel="noopener">3Blue1Brown — Matrix multiplication as composition</a></li>
+          <li><span class="kind kind-video">Video</span><a href="https://www.youtube.com/watch?v=kYB8IZa5AuE" target="_blank" rel="noopener">3Blue1Brown — Linear transformations</a></li>
+          <li><span class="kind kind-course">Course</span><a href="https://www.khanacademy.org/math/linear-algebra/matrix-transformations" target="_blank" rel="noopener">Khan Academy — Matrix Transformations</a></li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- 11. LINEAR ALGEBRA -->
+    <section class="topic" id="linear-algebra" data-title="11. Linear Algebra" data-lvl="3">
+      <div class="section-meta">
+        <span class="reading-time">⏱ 5 min read</span>
+        <button class="complete-btn" data-target="linear-algebra">Mark complete</button>
+      </div>
+      <h2>11. Linear Algebra <span class="level-badge lvl-3">Level 3</span></h2>
+      <p>Linear algebra pulls vectors and matrices together. It's the language ML thinks in.</p>
+
+      <h3>11.1 Linear Combinations</h3>
+      <p>$c_1 \mathbf{v}_1 + c_2 \mathbf{v}_2 + \cdots$ — scale each vector, add them up.</p>
+
+      <h3>11.2 Span</h3>
+      <p>The set of all linear combinations of a group of vectors. One vector → line. Two non-parallel → plane. Three non-coplanar → 3D space.</p>
+
+      <h3>11.3 Linear Independence</h3>
+      <p>Vectors where none can be written as a combination of the others.</p>
+
+      <h3>11.4 Matrix as Transformation</h3>
+      <p>Multiplying by a matrix moves every input vector to a new output — rotations, reflections, scalings, projections.</p>
+
+      <h3>11.5 Determinant (Preview)</h3>
+      <p>Measures how much a matrix scales area/volume. If $\det = 0$, the transformation squashes to lower dimension.</p>
+
+      <h3>11.6 Eigenvalues / Eigenvectors (Preview)</h3>
+      <p>Special vectors that only get scaled by a matrix: $A\mathbf{v} = \lambda \mathbf{v}$. Foundation of PCA, PageRank, spectral methods.</p>
+
+      <div class="ml-link">
+        <div class="label">ML Connection</div>
+        <ul>
+          <li>Every dataset is a matrix.</li>
+          <li>PCA finds eigenvectors of the covariance matrix.</li>
+          <li>Neural net layers = matrix multiplication + activation.</li>
+        </ul>
+      </div>
+
+      <div class="tip">
+        Practical priority for beginner ML: <strong>dot products, matrix–vector multiplication, transpose</strong>. Master those first; treat eigenvalues as "know they exist".
+      </div>
+
+      <div class="quiz" data-quiz="linear-algebra">
+        <h4>🎯 Quick Quiz</h4>
+        <div class="q" data-answer="1">
+          <div class="q-text">1. What does the span of two non-parallel 2D vectors give you?</div>
+          <div class="options">
+            <button class="option" data-idx="0">A line</button>
+            <button class="option" data-idx="1">The whole 2D plane</button>
+            <button class="option" data-idx="2">A single point</button>
+            <button class="option" data-idx="3">3D space</button>
+          </div>
+          <div class="feedback"></div>
+        </div>
+        <div class="q" data-answer="2">
+          <div class="q-text">2. If $\det(A) = 0$, then:</div>
+          <div class="options">
+            <button class="option" data-idx="0">$A$ is the identity</button>
+            <button class="option" data-idx="1">$A$ has full rank</button>
+            <button class="option" data-idx="2">$A$ has no inverse</button>
+            <button class="option" data-idx="3">$A$ must be symmetric</button>
+          </div>
+          <div class="feedback"></div>
+        </div>
+      </div>
+
+      <div class="resources">
+        <h4>Learning Resources</h4>
+        <ul>
+          <li><span class="kind kind-play">Playlist ⭐</span><a href="https://www.youtube.com/playlist?list=PLZHQObOWTQDPD3MizzM2xVFitgF8hE_ab" target="_blank" rel="noopener">3Blue1Brown — Essence of Linear Algebra (full series)</a></li>
+          <li><span class="kind kind-course">Course</span><a href="https://www.khanacademy.org/math/linear-algebra" target="_blank" rel="noopener">Khan Academy — Linear Algebra</a></li>
+          <li><span class="kind kind-read">Book</span><a href="https://mml-book.github.io/" target="_blank" rel="noopener">Free book — Mathematics for Machine Learning</a></li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- 12. CALCULUS -->
+    <section class="topic" id="calculus" data-title="12. Calculus" data-lvl="4">
+      <div class="section-meta">
+        <span class="reading-time">⏱ 8 min read</span>
+        <button class="complete-btn" data-target="calculus">Mark complete</button>
+      </div>
+      <h2>12. Calculus (Derivatives) <span class="level-badge lvl-4">Level 4</span></h2>
+      <p>Calculus is the mathematics of change. In ML we ask: "if I nudge this parameter, how does the loss change?" That's a derivative.</p>
+
+      <h3>12.1 Derivative Meaning</h3>
+      <p>$f'(x)$ = instantaneous slope of $f$ at $x$. How fast is $f$ changing right here?</p>
+
+      <h3>12.2 Power Rule</h3>
+      <p>$\dfrac{d}{dx} x^n = n x^{n-1}$. The most-used derivative rule.</p>
+      <div class="example">
+        <div class="label">Example</div>
+        $\frac{d}{dx} x^5 = 5x^4$. $\frac{d}{dx} \sqrt{x} = \frac{1}{2\sqrt{x}}$.
+      </div>
+
+      <h3>12.3 Other Rules</h3>
+      <table>
+        <tr><th>Rule</th><th>Formula</th></tr>
+        <tr><td>Constant</td><td>$\frac{d}{dx} c = 0$</td></tr>
+        <tr><td>Constant multiple</td><td>$\frac{d}{dx}[cf] = cf'$</td></tr>
+        <tr><td>Sum</td><td>$(f+g)' = f' + g'$</td></tr>
+        <tr><td>Product</td><td>$(fg)' = f'g + fg'$</td></tr>
+        <tr><td>$e^x$</td><td>$\frac{d}{dx} e^x = e^x$</td></tr>
+        <tr><td>$\ln x$</td><td>$\frac{d}{dx} \ln x = \frac{1}{x}$</td></tr>
+      </table>
+      <div class="example">
+        <div class="label">Example</div>
+        $f(x) = 4x^3 - 7x^2 + 2x - 9 \implies f'(x) = 12x^2 - 14x + 2$.
+      </div>
+
+      <h3>12.4 Partial Derivatives</h3>
+      <p>Multi-input function: differentiate w.r.t. one variable, hold others constant. Notation: $\dfrac{\partial f}{\partial x}$.</p>
+      <div class="example">
+        <div class="label">Example</div>
+        $f(x, y) = 3x^2 y + 4xy^3$.<br/>
+        $\frac{\partial f}{\partial x} = 6xy + 4y^3$, &nbsp; $\frac{\partial f}{\partial y} = 3x^2 + 12xy^2$.
+      </div>
+
+      <h3>12.5 Chain Rule</h3>
+      <p>$\dfrac{d}{dx} f(g(x)) = f'(g(x)) \cdot g'(x)$. This <em>is</em> backpropagation.</p>
+      <div class="example">
+        <div class="label">Example</div>
+        $f(x) = (3x + 1)^4 \implies f'(x) = 4(3x+1)^3 \cdot 3 = 12(3x+1)^3$.
+      </div>
+
+      <h3>12.6 The Gradient</h3>
+      <p>$\nabla f = \left( \frac{\partial f}{\partial x_1}, \dots, \frac{\partial f}{\partial x_n} \right)$. Points in the direction of steepest increase.</p>
+
+      <div class="ml-link">
+        <div class="label">ML Connection</div>
+        Training = compute loss → compute gradient (chain rule = backprop) → step opposite to gradient. Master the chain rule and you'll master neural nets.
+      </div>
+
+      <!-- Interactive: Derivative Visualizer -->
+      <div class="widget">
+        <h4>🎮 Try It — Derivative &amp; Tangent Line</h4>
+        <div class="widget-body">
+          <div class="controls">
+            <p style="margin: 0;">Watch the tangent slope change as you move $x$ along $f(x) = x^2$.</p>
+            <div class="slider-row">
+              <label>x =</label>
+              <input type="range" id="deriv-x" min="-4" max="4" step="0.1" value="1" />
+              <span class="val" id="deriv-x-val">1.0</span>
+            </div>
+            <div class="result-box">
+              <div class="lbl">f(x)</div>
+              <div class="val" id="deriv-fx">1.00</div>
+              <div class="lbl" style="margin-top:8px;">f'(x) = 2x (slope)</div>
+              <div class="val" id="deriv-slope">2.00</div>
+              <div class="lbl" style="margin-top:8px;">Tangent line</div>
+              <div style="color:var(--accent-2); font-family:monospace;" id="deriv-tangent">y = 2x - 1</div>
+            </div>
+          </div>
+          <canvas id="deriv-canvas" width="480" height="360"></canvas>
+        </div>
+      </div>
+
+      <div class="quiz" data-quiz="calculus">
+        <h4>🎯 Quick Quiz</h4>
+        <div class="q" data-answer="1">
+          <div class="q-text">1. Differentiate $f(x) = 5x^4 - 3x^2 + 7x - 2$.</div>
+          <div class="options">
+            <button class="option" data-idx="0">$20x^3 - 6x + 7 - 2$</button>
+            <button class="option" data-idx="1">$20x^3 - 6x + 7$</button>
+            <button class="option" data-idx="2">$5x^3 - 3x + 7$</button>
+            <button class="option" data-idx="3">$4x^4 - 2x^2 + 7$</button>
+          </div>
+          <div class="feedback"></div>
+        </div>
+        <div class="q" data-answer="2">
+          <div class="q-text">2. Using the chain rule: $\frac{d}{dx}(x^2+1)^3 = ?$</div>
+          <div class="options">
+            <button class="option" data-idx="0">$3(x^2+1)^2$</button>
+            <button class="option" data-idx="1">$6x^2$</button>
+            <button class="option" data-idx="2">$6x(x^2+1)^2$</button>
+            <button class="option" data-idx="3">$2x \cdot 3(x^2+1)$</button>
+          </div>
+          <div class="feedback"></div>
+        </div>
+        <div class="q" data-answer="0">
+          <div class="q-text">3. Gradient of $f(x,y)=x^2+y^2$ at $(3,4)$?</div>
+          <div class="options">
+            <button class="option" data-idx="0">$(6, 8)$</button>
+            <button class="option" data-idx="1">$(3, 4)$</button>
+            <button class="option" data-idx="2">$(9, 16)$</button>
+            <button class="option" data-idx="3">$(2, 2)$</button>
+          </div>
+          <div class="feedback"></div>
+        </div>
+      </div>
+
+      <div class="resources">
+        <h4>Learning Resources</h4>
+        <ul>
+          <li><span class="kind kind-play">Playlist ⭐</span><a href="https://www.youtube.com/playlist?list=PLZHQObOWTQDMsr9K-rj53DwVRMYO3t5Yr" target="_blank" rel="noopener">3Blue1Brown — Essence of Calculus</a></li>
+          <li><span class="kind kind-video">Video</span><a href="https://www.youtube.com/watch?v=YG15m2VwSjA" target="_blank" rel="noopener">3Blue1Brown — Visualizing the chain rule</a></li>
+          <li><span class="kind kind-course">Course</span><a href="https://www.khanacademy.org/math/differential-calculus" target="_blank" rel="noopener">Khan Academy — Differential Calculus</a></li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- 13. GRADIENT DESCENT -->
+    <section class="topic" id="gradient-descent" data-title="13. Gradient Descent" data-lvl="4">
+      <div class="section-meta">
+        <span class="reading-time">⏱ 8 min read</span>
+        <button class="complete-btn" data-target="gradient-descent">Mark complete</button>
+      </div>
+      <h2>13. Gradient Descent <span class="level-badge lvl-4">Level 4</span></h2>
+      <p>Gradient descent is <strong>the</strong> optimization algorithm behind almost every ML model. Uses the gradient to walk downhill on a cost function.</p>
+
+      <h3>13.1 The Cost Function</h3>
+      <p>$J(w, b) = \dfrac{1}{2n} \sum (\hat{y}_i - y_i)^2$ where $\hat{y}_i = wx_i + b$. Lower = better.</p>
+
+      <h3>13.2 The Big Picture</h3>
+      <p>You're in a foggy hilly landscape. You want the valley. Strategy: feel the slope → step downhill → repeat. That's it.</p>
+
+      <h3>13.3 Update Rule</h3>
+      <p>$\theta \leftarrow \theta - \alpha \cdot \dfrac{\partial J}{\partial \theta}$. $\alpha$ = learning rate.</p>
+      <p>For linear regression:</p>
+      <p>$\dfrac{\partial J}{\partial w} = \dfrac{1}{n} \sum (\hat{y}_i - y_i) x_i, \quad \dfrac{\partial J}{\partial b} = \dfrac{1}{n} \sum (\hat{y}_i - y_i)$</p>
+
+      <h3>13.4 Learning Rate</h3>
+      <ul>
+        <li>Too small: slow.</li>
+        <li>Too big: overshoots, diverges.</li>
+        <li>Just right: fast, stable.</li>
+      </ul>
+
+      <h3>13.5 Worked Mini-Example</h3>
+      <div class="example">
+        <div class="label">Example</div>
+        Data: $(x, y) = (2, 5)$. Start $w=1, b=0$, $\alpha=0.1$.<br/>
+        Predict: $\hat{y} = 2$. Error: $-3$.<br/>
+        Gradients: $\partial w = -6$, $\partial b = -3$.<br/>
+        Update: $w = 1.6$, $b = 0.3$. New prediction: $3.5$. Closer to $5$!
+      </div>
+
+      <h3>13.6 Local vs Global Minimum</h3>
+      <ul>
+        <li>Linear regression: convex → always global.</li>
+        <li>Neural nets: many minima, but most "good enough" ones work.</li>
+      </ul>
+
+      <h3>13.7 Variants</h3>
+      <ul>
+        <li><strong>Batch GD</strong>: full dataset per step. Accurate but slow.</li>
+        <li><strong>SGD</strong>: one example. Noisy but fast.</li>
+        <li><strong>Mini-batch SGD</strong>: 32–256 examples. Deep learning default.</li>
+        <li><strong>Adam, Momentum, RMSProp</strong>: smart enhancements.</li>
+      </ul>
+
+      <div class="ml-link">
+        <div class="label">The Grand Summary</div>
+        <ol>
+          <li>Initialize parameters randomly.</li>
+          <li>Compute predictions and loss.</li>
+          <li>Compute gradient (backprop).</li>
+          <li>Update: $\theta \leftarrow \theta - \alpha \nabla J$.</li>
+          <li>Repeat.</li>
+        </ol>
+        Every model trains this way. You now understand the heart of ML. 🎉
+      </div>
+
+      <!-- Interactive: Gradient Descent Simulator -->
+      <div class="widget">
+        <h4>🎮 Try It — Gradient Descent Simulator</h4>
+        <p style="margin: 0 0 10px; color: var(--muted); font-size: 0.9rem;">Watch the ball roll down $f(x) = x^2$. Adjust the learning rate and starting position.</p>
+        <div class="widget-body">
+          <div class="controls">
+            <div class="slider-row">
+              <label>Start x</label>
+              <input type="range" id="gd-start" min="-5" max="5" step="0.1" value="4" />
+              <span class="val" id="gd-start-val">4.0</span>
+            </div>
+            <div class="slider-row">
+              <label>α (rate)</label>
+              <input type="range" id="gd-lr" min="0.01" max="1.1" step="0.01" value="0.1" />
+              <span class="val" id="gd-lr-val">0.10</span>
+            </div>
+            <div style="display: flex; gap: 8px;">
+              <button class="btn" id="gd-run">▶ Run</button>
+              <button class="btn secondary" id="gd-step">Step</button>
+              <button class="btn secondary" id="gd-reset">Reset</button>
+            </div>
+            <div class="result-box">
+              <div class="lbl">Iteration</div>
+              <div class="val" id="gd-iter">0</div>
+              <div class="lbl" style="margin-top:8px;">Current x</div>
+              <div class="val" id="gd-x">4.00</div>
+              <div class="lbl" style="margin-top:8px;">Loss f(x)</div>
+              <div class="val" id="gd-loss">16.00</div>
+              <div id="gd-status" style="margin-top:8px; font-size:0.85rem;"></div>
+            </div>
+          </div>
+          <canvas id="gd-canvas" width="480" height="360"></canvas>
+        </div>
+      </div>
+
+      <div class="quiz" data-quiz="gradient-descent">
+        <h4>🎯 Quick Quiz</h4>
+        <div class="q" data-answer="0">
+          <div class="q-text">1. Training loss keeps oscillating and never settles. What should you try first?</div>
+          <div class="options">
+            <button class="option" data-idx="0">Lower the learning rate</button>
+            <button class="option" data-idx="1">Increase the learning rate</button>
+            <button class="option" data-idx="2">Reset weights to zero</button>
+            <button class="option" data-idx="3">Use a bigger model</button>
+          </div>
+          <div class="feedback"></div>
+        </div>
+        <div class="q" data-answer="2">
+          <div class="q-text">2. Why do we usually use mini-batches?</div>
+          <div class="options">
+            <button class="option" data-idx="0">They're mathematically exact</button>
+            <button class="option" data-idx="1">Whole datasets don't work</button>
+            <button class="option" data-idx="2">Good gradient estimates + fast on GPUs</button>
+            <button class="option" data-idx="3">Random requirement</button>
+          </div>
+          <div class="feedback"></div>
+        </div>
+      </div>
+
+      <div class="resources">
+        <h4>Learning Resources</h4>
+        <ul>
+          <li><span class="kind kind-video">Video ⭐</span><a href="https://www.youtube.com/watch?v=IHZwWFHWa-w" target="_blank" rel="noopener">3Blue1Brown — Gradient descent, how NNs learn</a></li>
+          <li><span class="kind kind-video">Video</span><a href="https://www.youtube.com/watch?v=sDv4f4s2SB8" target="_blank" rel="noopener">StatQuest — Gradient Descent step-by-step</a></li>
+          <li><span class="kind kind-course">Course ⭐</span><a href="https://www.coursera.org/specializations/machine-learning-introduction" target="_blank" rel="noopener">Andrew Ng's ML Specialization</a></li>
+          <li><span class="kind kind-play">Interactive</span><a href="https://playground.tensorflow.org/" target="_blank" rel="noopener">TensorFlow Playground — Neural net in your browser</a></li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- NEXT STEPS -->
+    <section class="topic" id="next-steps" data-title="🎯 Next Steps">
+      <h2>🎯 Where to Go From Here</h2>
+      <p>You now have the math vocabulary to start supervised ML. Suggested next 6–12 weeks:</p>
+
+      <h3>Step 1 — Consolidate</h3>
+      <ol>
+        <li>Re-do every quiz without peeking.</li>
+        <li>Watch <a href="https://www.youtube.com/playlist?list=PLZHQObOWTQDPD3MizzM2xVFitgF8hE_ab" target="_blank" rel="noopener">3Blue1Brown's Essence of Linear Algebra</a> end-to-end.</li>
+        <li>Watch <a href="https://www.youtube.com/playlist?list=PLZHQObOWTQDMsr9K-rj53DwVRMYO3t5Yr" target="_blank" rel="noopener">3Blue1Brown's Essence of Calculus</a>.</li>
+      </ol>
+
+      <h3>Step 2 — Take a Real Course</h3>
+      <ul>
+        <li><a href="https://www.coursera.org/specializations/machine-learning-introduction" target="_blank" rel="noopener">Andrew Ng — Machine Learning Specialization</a></li>
+        <li><a href="https://course.fast.ai/" target="_blank" rel="noopener">fast.ai — Practical Deep Learning</a></li>
+      </ul>
+
+      <h3>Step 3 — Code It</h3>
+      <ol>
+        <li>Implement linear regression from scratch in NumPy.</li>
+        <li>Add gradient descent by hand.</li>
+        <li>Then logistic regression, then a small neural network.</li>
+      </ol>
+
+      <h3>Step 4 — Free Books</h3>
+      <ul>
+        <li><a href="https://mml-book.github.io/" target="_blank" rel="noopener">Mathematics for Machine Learning</a></li>
+        <li><a href="https://www.deeplearningbook.org/" target="_blank" rel="noopener">Deep Learning</a> (Goodfellow et al.)</li>
+        <li><a href="http://neuralnetworksanddeeplearning.com/" target="_blank" rel="noopener">Neural Networks and Deep Learning</a> (Nielsen)</li>
+      </ul>
+
+      <div class="tip">
+        Understanding beats memorization. The math you truly own is the math you can re-derive. Good luck! 🚀
+      </div>
+    </section>
+
+  </main>
+</div>
+
+<button class="back-to-top" id="backToTop" onclick="window.scrollTo({top:0, behavior:'smooth'})">↑</button>
+
+<footer>
+  Built for the Math for ML roadmap · Open in any modern browser
+  <div class="fun">💙 Happy learning!</div>
+</footer>
+
+<script>
+/* ============================================================
+   THEME
+============================================================ */
+function toggleTheme() {
+  const html = document.documentElement;
+  const current = html.getAttribute('data-theme');
+  const next = current === 'dark' ? 'light' : 'dark';
+  html.setAttribute('data-theme', next);
+  localStorage.setItem('mml-theme', next);
+  document.getElementById('themeToggle').textContent = next === 'dark' ? '🌙 Dark' : '☀️ Light';
+  // Re-render canvas widgets for new theme colors
+  redrawAllCanvases();
+}
+(function initTheme() {
+  const saved = localStorage.getItem('mml-theme') || 'dark';
+  document.documentElement.setAttribute('data-theme', saved);
+  const btn = document.getElementById('themeToggle');
+  if (btn) btn.textContent = saved === 'dark' ? '🌙 Dark' : '☀️ Light';
+})();
+
+/* ============================================================
+   FONT SIZE
+============================================================ */
+function changeFont(delta) {
+  const current = parseInt(localStorage.getItem('mml-font') || '16', 10);
+  const next = Math.max(13, Math.min(22, current + delta));
+  document.documentElement.style.setProperty('--font-size', next + 'px');
+  localStorage.setItem('mml-font', next);
+}
+(function initFont() {
+  const saved = parseInt(localStorage.getItem('mml-font') || '16', 10);
+  document.documentElement.style.setProperty('--font-size', saved + 'px');
+})();
+
+/* ============================================================
+   TOC BUILDER
+============================================================ */
+(function buildToc() {
+  const sections = document.querySelectorAll('section.topic[data-lvl]');
+  sections.forEach(sec => {
+    const lvl = sec.dataset.lvl;
+    const id = sec.id;
+    const title = sec.dataset.title;
+    const ol = document.querySelector(`nav.toc ol[data-lvl="${lvl}"]`);
+    if (!ol) return;
+    const li = document.createElement('li');
+    li.innerHTML = `
+      <input type="checkbox" class="toc-check" data-target="${id}" title="Mark complete" />
+      <a href="#${id}">${title}</a>
+    `;
+    ol.appendChild(li);
+  });
+})();
+
+/* ============================================================
+   PROGRESS TRACKING (localStorage)
+============================================================ */
+function getCompleted() {
+  try { return JSON.parse(localStorage.getItem('mml-completed') || '[]'); } catch (e) { return []; }
+}
+function setCompleted(arr) {
+  localStorage.setItem('mml-completed', JSON.stringify(arr));
+}
+function updateProgressUI() {
+  const completed = getCompleted();
+  const total = document.querySelectorAll('section.topic[data-lvl]').length;
+  document.getElementById('progressCount').textContent = `${completed.length} / ${total}`;
+  document.querySelectorAll('.toc-check').forEach(cb => {
+    cb.checked = completed.includes(cb.dataset.target);
+  });
+  document.querySelectorAll('.complete-btn').forEach(btn => {
+    if (completed.includes(btn.dataset.target)) {
+      btn.classList.add('done');
+      btn.textContent = '✓ Completed';
+    } else {
+      btn.classList.remove('done');
+      btn.textContent = 'Mark complete';
+    }
+  });
+}
+function toggleComplete(id) {
+  let completed = getCompleted();
+  if (completed.includes(id)) {
+    completed = completed.filter(x => x !== id);
+  } else {
+    completed.push(id);
+    fireConfetti();
+  }
+  setCompleted(completed);
+  updateProgressUI();
+}
+document.addEventListener('click', e => {
+  if (e.target.classList.contains('complete-btn')) {
+    toggleComplete(e.target.dataset.target);
+  }
+});
+document.addEventListener('change', e => {
+  if (e.target.classList.contains('toc-check')) {
+    toggleComplete(e.target.dataset.target);
+  }
+});
+function resetProgress() {
+  if (confirm('Reset all progress and quiz answers?')) {
+    localStorage.removeItem('mml-completed');
+    localStorage.removeItem('mml-quiz');
+    location.reload();
+  }
+}
+updateProgressUI();
+
+/* ============================================================
+   PROGRESS BAR (scroll)
+============================================================ */
+function updateProgressBar() {
+  const doc = document.documentElement;
+  const scrollTop = window.scrollY;
+  const height = doc.scrollHeight - doc.clientHeight;
+  const pct = height > 0 ? (scrollTop / height) * 100 : 0;
+  document.getElementById('progressBar').style.width = pct + '%';
+  document.getElementById('backToTop').classList.toggle('visible', scrollTop > 400);
+}
+window.addEventListener('scroll', updateProgressBar);
+updateProgressBar();
+
+/* ============================================================
+   SCROLL SPY (highlight active TOC link)
+============================================================ */
+const observer = new IntersectionObserver((entries) => {
+  entries.forEach(entry => {
+    if (entry.isIntersecting) {
+      const id = entry.target.id;
+      document.querySelectorAll('nav.toc a').forEach(a => a.classList.remove('active'));
+      const link = document.querySelector(`nav.toc a[href="#${id}"]`);
+      if (link) link.classList.add('active');
+    }
+  });
+}, { rootMargin: '-40% 0px -55% 0px' });
+document.querySelectorAll('section.topic').forEach(s => observer.observe(s));
+
+/* ============================================================
+   TOC SEARCH FILTER
+============================================================ */
+function filterToc(query) {
+  const q = query.toLowerCase().trim();
+  document.querySelectorAll('nav.toc ol li').forEach(li => {
+    const text = li.textContent.toLowerCase();
+    li.style.display = !q || text.includes(q) ? '' : 'none';
+  });
+  document.querySelectorAll('nav.toc h3').forEach(h => {
+    const ol = h.nextElementSibling;
+    if (!ol || ol.tagName !== 'OL') return;
+    const anyVisible = Array.from(ol.children).some(li => li.style.display !== 'none');
+    h.style.display = anyVisible ? '' : 'none';
+  });
+}
+
+/* ============================================================
+   QUIZ ENGINE
+============================================================ */
+function getQuizState() {
+  try { return JSON.parse(localStorage.getItem('mml-quiz') || '{}'); } catch (e) { return {}; }
+}
+function saveQuizState(state) {
+  localStorage.setItem('mml-quiz', JSON.stringify(state));
+}
+(function initQuizzes() {
+  const state = getQuizState();
+  document.querySelectorAll('.quiz').forEach(quiz => {
+    const quizId = quiz.dataset.quiz;
+    quiz.querySelectorAll('.q').forEach((q, qIdx) => {
+      const correctIdx = parseInt(q.dataset.answer, 10);
+      const options = q.querySelectorAll('.option');
+      const feedback = q.querySelector('.feedback');
+      const key = `${quizId}-${qIdx}`;
+
+      // restore state
+      if (state[key] !== undefined) {
+        const chosen = state[key];
+        options.forEach((opt, i) => {
+          opt.classList.add('disabled');
+          if (i === correctIdx) opt.classList.add('correct');
+          if (i === chosen && chosen !== correctIdx) opt.classList.add('wrong');
+        });
+        if (chosen === correctIdx) {
+          feedback.textContent = '✓ Correct!';
+          feedback.className = 'feedback ok';
+        } else {
+          feedback.textContent = '✗ Not quite — the correct answer is highlighted.';
+          feedback.className = 'feedback no';
+        }
+      }
+
+      options.forEach((opt, i) => {
+        opt.addEventListener('click', () => {
+          if (opt.classList.contains('disabled')) return;
+          options.forEach(o => o.classList.add('disabled'));
+          if (i === correctIdx) {
+            opt.classList.add('correct');
+            feedback.textContent = '✓ Correct! Nice work.';
+            feedback.className = 'feedback ok';
+            fireConfetti();
+          } else {
+            opt.classList.add('wrong');
+            options[correctIdx].classList.add('correct');
+            feedback.textContent = '✗ Not quite — the correct answer is highlighted.';
+            feedback.className = 'feedback no';
+          }
+          state[key] = i;
+          saveQuizState(state);
+        });
+      });
+    });
+  });
+})();
+
+/* ============================================================
+   CONFETTI
+============================================================ */
+function fireConfetti() {
+  const colors = ['#4cc9f0', '#b892ff', '#ff8fa3', '#ffd166', '#7bd389'];
+  for (let i = 0; i < 30; i++) {
+    const c = document.createElement('div');
+    c.className = 'confetti';
+    c.style.left = Math.random() * 100 + 'vw';
+    c.style.background = colors[Math.floor(Math.random() * colors.length)];
+    c.style.animationDuration = (1.5 + Math.random() * 1.5) + 's';
+    c.style.animationDelay = Math.random() * 0.3 + 's';
+    document.body.appendChild(c);
+    setTimeout(() => c.remove(), 3500);
+  }
+}
+
+/* ============================================================
+   HELPERS FOR CANVASES
+============================================================ */
+function themeColors() {
+  const s = getComputedStyle(document.documentElement);
+  return {
+    accent: s.getPropertyValue('--accent').trim(),
+    purple: s.getPropertyValue('--purple').trim(),
+    pink: s.getPropertyValue('--pink').trim(),
+    good: s.getPropertyValue('--good').trim(),
+    warn: s.getPropertyValue('--warn').trim(),
+    text: s.getPropertyValue('--text').trim(),
+    muted: s.getPropertyValue('--muted').trim(),
+    grid: s.getPropertyValue('--grid').trim(),
+    panel: s.getPropertyValue('--panel').trim(),
+    border: s.getPropertyValue('--border').trim()
+  };
+}
+function drawGrid(ctx, w, h, xRange, yRange) {
+  const c = themeColors();
+  ctx.fillStyle = c.panel;
+  ctx.fillRect(0, 0, w, h);
+  ctx.strokeStyle = c.grid;
+  ctx.lineWidth = 1;
+  // vertical grid lines
+  for (let x = Math.ceil(xRange[0]); x <= xRange[1]; x++) {
+    const px = mapX(x, xRange, w);
+    ctx.beginPath(); ctx.moveTo(px, 0); ctx.lineTo(px, h); ctx.stroke();
+  }
+  for (let y = Math.ceil(yRange[0]); y <= yRange[1]; y++) {
+    const py = mapY(y, yRange, h);
+    ctx.beginPath(); ctx.moveTo(0, py); ctx.lineTo(w, py); ctx.stroke();
+  }
+  // axes
+  ctx.strokeStyle = c.muted;
+  ctx.lineWidth = 1.5;
+  const y0 = mapY(0, yRange, h);
+  const x0 = mapX(0, xRange, w);
+  ctx.beginPath(); ctx.moveTo(0, y0); ctx.lineTo(w, y0); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(x0, 0); ctx.lineTo(x0, h); ctx.stroke();
+  // axis labels
+  ctx.fillStyle = c.muted;
+  ctx.font = '11px sans-serif';
+  ctx.fillText('x', w - 12, y0 - 6);
+  ctx.fillText('y', x0 + 6, 12);
+}
+function mapX(x, xRange, w) {
+  return ((x - xRange[0]) / (xRange[1] - xRange[0])) * w;
+}
+function mapY(y, yRange, h) {
+  return h - ((y - yRange[0]) / (yRange[1] - yRange[0])) * h;
+}
+
+/* ============================================================
+   WIDGET: Equation Solver
+============================================================ */
+(function equationSolver() {
+  const a = document.getElementById('eq-a');
+  const b = document.getElementById('eq-b');
+  const c = document.getElementById('eq-c');
+  if (!a) return;
+  function update() {
+    const av = parseFloat(a.value), bv = parseFloat(b.value), cv = parseFloat(c.value);
+    document.getElementById('eq-a-val').textContent = av;
+    document.getElementById('eq-b-val').textContent = bv;
+    document.getElementById('eq-c-val').textContent = cv;
+    document.getElementById('eq-expr').textContent = `${av}x + ${bv} = ${cv}`;
+    if (av === 0) {
+      document.getElementById('eq-solution').textContent = bv === cv ? 'Any x' : 'No solution';
+      document.getElementById('eq-steps').textContent = 'a is zero — cannot divide.';
+    } else {
+      const x = (cv - bv) / av;
+      document.getElementById('eq-solution').textContent = `x = ${x.toFixed(3)}`;
+      document.getElementById('eq-steps').textContent =
+        `Subtract ${bv}: ${av}x = ${cv - bv} → divide by ${av} → x = ${x.toFixed(3)}`;
+    }
+  }
+  [a, b, c].forEach(el => el.addEventListener('input', update));
+  update();
+})();
+
+/* ============================================================
+   WIDGET: Function Plotter
+============================================================ */
+let fnCanvasState = null;
+(function functionPlotter() {
+  const canvas = document.getElementById('fn-canvas');
+  if (!canvas) return;
+  fnCanvasState = { canvas };
+  const type = document.getElementById('fn-type');
+  const a = document.getElementById('fn-a');
+  const b = document.getElementById('fn-b');
+  const c = document.getElementById('fn-c');
+
+  function evalFn(x) {
+    const av = parseFloat(a.value), bv = parseFloat(b.value), cv = parseFloat(c.value);
+    switch (type.value) {
+      case 'linear': return av * x + bv;
+      case 'quadratic': return av * x * x + bv * x + cv;
+      case 'sigmoid': return 1 / (1 + Math.exp(-x));
+      case 'exp': return av * Math.exp(bv * x);
+      case 'log': return x > 0 ? av * Math.log(x) + bv : null;
+    }
+  }
+  function label() {
+    const av = parseFloat(a.value).toFixed(1);
+    const bv = parseFloat(b.value).toFixed(1);
+    const cv = parseFloat(c.value).toFixed(1);
+    switch (type.value) {
+      case 'linear': return `f(x) = ${av}x + ${bv}`;
+      case 'quadratic': return `f(x) = ${av}x² + ${bv}x + ${cv}`;
+      case 'sigmoid': return `f(x) = 1 / (1 + e⁻ˣ)`;
+      case 'exp': return `f(x) = ${av} · e^(${bv}x)`;
+      case 'log': return `f(x) = ${av} · ln(x) + ${bv}`;
+    }
+  }
+
+  function draw() {
+    const w = canvas.width, h = canvas.height;
+    const ctx = canvas.getContext('2d');
+    const xRange = [-5, 5], yRange = [-5, 5];
+    drawGrid(ctx, w, h, xRange, yRange);
+    const cols = themeColors();
+    ctx.strokeStyle = cols.accent;
+    ctx.lineWidth = 2.5;
+    ctx.beginPath();
+    let started = false;
+    for (let px = 0; px <= w; px++) {
+      const x = xRange[0] + (px / w) * (xRange[1] - xRange[0]);
+      const y = evalFn(x);
+      if (y === null || !isFinite(y)) { started = false; continue; }
+      const py = mapY(y, yRange, h);
+      if (py < -10 || py > h + 10) { started = false; continue; }
+      if (!started) { ctx.moveTo(px, py); started = true; } else ctx.lineTo(px, py);
+    }
+    ctx.stroke();
+    document.getElementById('fn-label').textContent = label();
+    document.getElementById('fn-a-val').textContent = parseFloat(a.value).toFixed(1);
+    document.getElementById('fn-b-val').textContent = parseFloat(b.value).toFixed(1);
+    document.getElementById('fn-c-val').textContent = parseFloat(c.value).toFixed(1);
+  }
+  fnCanvasState.draw = draw;
+
+  function toggleRows() {
+    const t = type.value;
+    document.getElementById('fn-c-row').style.display = (t === 'quadratic') ? '' : 'none';
+    document.getElementById('fn-a-row').style.display = (t === 'sigmoid') ? 'none' : '';
+    document.getElementById('fn-b-row').style.display = (t === 'sigmoid') ? 'none' : '';
+  }
+  [type, a, b, c].forEach(el => el.addEventListener('input', () => { toggleRows(); draw(); }));
+  toggleRows(); draw();
+})();
+
+/* ============================================================
+   WIDGET: Slope Explorer
+============================================================ */
+let slopeCanvasState = null;
+(function slopeExplorer() {
+  const canvas = document.getElementById('slope-canvas');
+  if (!canvas) return;
+  slopeCanvasState = { canvas };
+  const m = document.getElementById('slope-m');
+  const b = document.getElementById('slope-b');
+
+  function draw() {
+    const mv = parseFloat(m.value), bv = parseFloat(b.value);
+    document.getElementById('slope-m-val').textContent = mv.toFixed(1);
+    document.getElementById('slope-b-val').textContent = bv.toFixed(1);
+    document.getElementById('slope-eq').textContent = `y = ${mv.toFixed(1)} x + ${bv.toFixed(1)}`;
+    let interp;
+    if (mv > 0.1) interp = `Going up-right. Every step +1 in x, y goes up ${mv.toFixed(1)}.`;
+    else if (mv < -0.1) interp = `Going down-right. Every step +1 in x, y goes down ${(-mv).toFixed(1)}.`;
+    else interp = 'Nearly horizontal.';
+    document.getElementById('slope-interp').textContent = interp;
+
+    const w = canvas.width, h = canvas.height;
+    const ctx = canvas.getContext('2d');
+    const xRange = [-6, 6], yRange = [-6, 6];
+    drawGrid(ctx, w, h, xRange, yRange);
+    const cols = themeColors();
+    ctx.strokeStyle = cols.accent;
+    ctx.lineWidth = 3;
+    ctx.beginPath();
+    ctx.moveTo(mapX(xRange[0], xRange, w), mapY(mv * xRange[0] + bv, yRange, h));
+    ctx.lineTo(mapX(xRange[1], xRange, w), mapY(mv * xRange[1] + bv, yRange, h));
+    ctx.stroke();
+    // y-intercept marker
+    ctx.fillStyle = cols.pink;
+    ctx.beginPath();
+    ctx.arc(mapX(0, xRange, w), mapY(bv, yRange, h), 6, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.fillStyle = cols.text;
+    ctx.font = '12px sans-serif';
+    ctx.fillText(`(0, ${bv.toFixed(1)})`, mapX(0, xRange, w) + 8, mapY(bv, yRange, h) - 8);
+  }
+  slopeCanvasState.draw = draw;
+  [m, b].forEach(el => el.addEventListener('input', draw));
+  draw();
+})();
+
+/* ============================================================
+   WIDGET: Dot Product
+============================================================ */
+let vecCanvasState = null;
+(function dotProduct() {
+  const canvas = document.getElementById('vec-canvas');
+  if (!canvas) return;
+  vecCanvasState = { canvas };
+  const ids = ['dot-a1', 'dot-a2', 'dot-b1', 'dot-b2'];
+  const inputs = ids.map(id => document.getElementById(id));
+
+  function draw() {
+    const [a1, a2, b1, b2] = inputs.map(i => parseFloat(i.value) || 0);
+    const dot = a1 * b1 + a2 * b2;
+    const magA = Math.sqrt(a1*a1 + a2*a2);
+    const magB = Math.sqrt(b1*b1 + b2*b2);
+    const cos = (magA * magB > 0) ? dot / (magA * magB) : 0;
+    const angleDeg = Math.acos(Math.max(-1, Math.min(1, cos))) * 180 / Math.PI;
+    document.getElementById('dot-result').textContent = dot.toFixed(2);
+    document.getElementById('cos-result').textContent = cos.toFixed(3);
+    document.getElementById('angle-result').textContent = angleDeg.toFixed(1) + '°';
+
+    const w = canvas.width, h = canvas.height;
+    const ctx = canvas.getContext('2d');
+    const xRange = [-6, 6], yRange = [-6, 6];
+    drawGrid(ctx, w, h, xRange, yRange);
+    const cols = themeColors();
+
+    function drawArrow(x, y, color, label) {
+      const ox = mapX(0, xRange, w), oy = mapY(0, yRange, h);
+      const tx = mapX(x, xRange, w), ty = mapY(y, yRange, h);
+      ctx.strokeStyle = color;
+      ctx.fillStyle = color;
+      ctx.lineWidth = 3;
+      ctx.beginPath();
+      ctx.moveTo(ox, oy); ctx.lineTo(tx, ty); ctx.stroke();
+      // arrow head
+      const ang = Math.atan2(ty - oy, tx - ox);
+      const size = 8;
+      ctx.beginPath();
+      ctx.moveTo(tx, ty);
+      ctx.lineTo(tx - size * Math.cos(ang - 0.4), ty - size * Math.sin(ang - 0.4));
+      ctx.lineTo(tx - size * Math.cos(ang + 0.4), ty - size * Math.sin(ang + 0.4));
+      ctx.closePath(); ctx.fill();
+      ctx.font = 'bold 14px sans-serif';
+      ctx.fillText(label, tx + 8, ty - 4);
+    }
+    drawArrow(a1, a2, cols.accent, 'a');
+    drawArrow(b1, b2, cols.pink, 'b');
+
+    // angle arc
+    if (magA > 0 && magB > 0) {
+      const angA = Math.atan2(-a2, a1);
+      const angB = Math.atan2(-b2, b1);
+      const ox = mapX(0, xRange, w), oy = mapY(0, yRange, h);
+      ctx.strokeStyle = cols.warn;
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      const start = Math.min(angA, angB), end = Math.max(angA, angB);
+      ctx.arc(ox, oy, 30, start, end);
+      ctx.stroke();
+    }
+  }
+  vecCanvasState.draw = draw;
+  inputs.forEach(i => i.addEventListener('input', draw));
+  draw();
+})();
+
+/* ============================================================
+   WIDGET: 2x2 Matrix Multiplier
+============================================================ */
+(function matrixMult() {
+  const ids = ['mat-a11','mat-a12','mat-a21','mat-a22','mat-b11','mat-b12','mat-b21','mat-b22'];
+  const inputs = ids.map(id => document.getElementById(id));
+  if (!inputs[0]) return;
+  function update() {
+    const [a11,a12,a21,a22,b11,b12,b21,b22] = inputs.map(i => parseFloat(i.value) || 0);
+    const c11 = a11*b11 + a12*b21;
+    const c12 = a11*b12 + a12*b22;
+    const c21 = a21*b11 + a22*b21;
+    const c22 = a21*b12 + a22*b22;
+    document.getElementById('mat-c11').textContent = c11;
+    document.getElementById('mat-c12').textContent = c12;
+    document.getElementById('mat-c21').textContent = c21;
+    document.getElementById('mat-c22').textContent = c22;
+    document.getElementById('mat-steps').innerHTML =
+      `C₁₁ = ${a11}·${b11} + ${a12}·${b21} = <b>${c11}</b><br>` +
+      `C₁₂ = ${a11}·${b12} + ${a12}·${b22} = <b>${c12}</b><br>` +
+      `C₂₁ = ${a21}·${b11} + ${a22}·${b21} = <b>${c21}</b><br>` +
+      `C₂₂ = ${a21}·${b12} + ${a22}·${b22} = <b>${c22}</b>`;
+  }
+  inputs.forEach(i => i.addEventListener('input', update));
+  update();
+})();
+
+/* ============================================================
+   WIDGET: Derivative Visualizer
+============================================================ */
+let derivCanvasState = null;
+(function derivativeViz() {
+  const canvas = document.getElementById('deriv-canvas');
+  if (!canvas) return;
+  derivCanvasState = { canvas };
+  const xInput = document.getElementById('deriv-x');
+
+  function draw() {
+    const x0 = parseFloat(xInput.value);
+    const f0 = x0 * x0;
+    const slope = 2 * x0;
+    const intercept = f0 - slope * x0;
+
+    document.getElementById('deriv-x-val').textContent = x0.toFixed(1);
+    document.getElementById('deriv-fx').textContent = f0.toFixed(2);
+    document.getElementById('deriv-slope').textContent = slope.toFixed(2);
+    document.getElementById('deriv-tangent').textContent =
+      `y = ${slope.toFixed(2)}x ${intercept >= 0 ? '+' : '−'} ${Math.abs(intercept).toFixed(2)}`;
+
+    const w = canvas.width, h = canvas.height;
+    const ctx = canvas.getContext('2d');
+    const xRange = [-5, 5], yRange = [-2, 18];
+    drawGrid(ctx, w, h, xRange, yRange);
+    const cols = themeColors();
+
+    // curve
+    ctx.strokeStyle = cols.accent;
+    ctx.lineWidth = 2.5;
+    ctx.beginPath();
+    for (let px = 0; px <= w; px++) {
+      const xv = xRange[0] + (px / w) * (xRange[1] - xRange[0]);
+      const yv = xv * xv;
+      const py = mapY(yv, yRange, h);
+      if (px === 0) ctx.moveTo(px, py); else ctx.lineTo(px, py);
+    }
+    ctx.stroke();
+
+    // tangent line
+    ctx.strokeStyle = cols.pink;
+    ctx.lineWidth = 2;
+    ctx.setLineDash([6, 4]);
+    ctx.beginPath();
+    ctx.moveTo(mapX(xRange[0], xRange, w), mapY(slope * xRange[0] + intercept, yRange, h));
+    ctx.lineTo(mapX(xRange[1], xRange, w), mapY(slope * xRange[1] + intercept, yRange, h));
+    ctx.stroke();
+    ctx.setLineDash([]);
+
+    // point marker
+    ctx.fillStyle = cols.warn;
+    ctx.beginPath();
+    ctx.arc(mapX(x0, xRange, w), mapY(f0, yRange, h), 7, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.fillStyle = cols.text;
+    ctx.font = 'bold 12px sans-serif';
+    ctx.fillText(`(${x0.toFixed(1)}, ${f0.toFixed(1)})`, mapX(x0, xRange, w) + 10, mapY(f0, yRange, h) - 8);
+  }
+  derivCanvasState.draw = draw;
+  xInput.addEventListener('input', draw);
+  draw();
+})();
+
+/* ============================================================
+   WIDGET: Gradient Descent Simulator
+============================================================ */
+let gdCanvasState = null;
+(function gradientDescent() {
+  const canvas = document.getElementById('gd-canvas');
+  if (!canvas) return;
+  const start = document.getElementById('gd-start');
+  const lr = document.getElementById('gd-lr');
+  const iterEl = document.getElementById('gd-iter');
+  const xEl = document.getElementById('gd-x');
+  const lossEl = document.getElementById('gd-loss');
+  const statusEl = document.getElementById('gd-status');
+
+  let history = [];
+  let currentX = parseFloat(start.value);
+  let iter = 0;
+  let running = false;
+  let interval = null;
+
+  gdCanvasState = { canvas, redraw: () => draw() };
+
+  function reset() {
+    stopRun();
+    currentX = parseFloat(start.value);
+    iter = 0;
+    history = [currentX];
+    updateUI();
+    draw();
+  }
+  function step() {
+    const alpha = parseFloat(lr.value);
+    const grad = 2 * currentX; // derivative of x^2
+    currentX = currentX - alpha * grad;
+    // safety: prevent runaway
+    if (!isFinite(currentX) || Math.abs(currentX) > 1000) {
+      currentX = Math.sign(currentX || 1) * 1000;
+      stopRun();
+      statusEl.innerHTML = '<span style="color:var(--danger);">⚠ Diverged! Learning rate too big.</span>';
+      return;
+    }
+    iter++;
+    history.push(currentX);
+    if (history.length > 60) history.shift();
+    updateUI();
+    draw();
+    if (Math.abs(2 * currentX) < 0.001) {
+      stopRun();
+      statusEl.innerHTML = '<span style="color:var(--good);">✓ Converged!</span>';
+    }
+  }
+  function stopRun() {
+    running = false;
+    if (interval) { clearInterval(interval); interval = null; }
+    document.getElementById('gd-run').textContent = '▶ Run';
+  }
+  function toggleRun() {
+    if (running) { stopRun(); return; }
+    running = true;
+    document.getElementById('gd-run').textContent = '⏸ Pause';
+    statusEl.textContent = '';
+    interval = setInterval(() => { if (running) step(); }, 200);
+  }
+  function updateUI() {
+    document.getElementById('gd-start-val').textContent = parseFloat(start.value).toFixed(1);
+    document.getElementById('gd-lr-val').textContent = parseFloat(lr.value).toFixed(2);
+    iterEl.textContent = iter;
+    xEl.textContent = currentX.toFixed(3);
+    lossEl.textContent = (currentX * currentX).toFixed(3);
+  }
+  function draw() {
+    const w = canvas.width, h = canvas.height;
+    const ctx = canvas.getContext('2d');
+    const xRange = [-6, 6], yRange = [-3, 36];
+    drawGrid(ctx, w, h, xRange, yRange);
+    const cols = themeColors();
+
+    // parabola
+    ctx.strokeStyle = cols.accent;
+    ctx.lineWidth = 2.5;
+    ctx.beginPath();
+    for (let px = 0; px <= w; px++) {
+      const xv = xRange[0] + (px / w) * (xRange[1] - xRange[0]);
+      const yv = xv * xv;
+      const py = mapY(yv, yRange, h);
+      if (px === 0) ctx.moveTo(px, py); else ctx.lineTo(px, py);
+    }
+    ctx.stroke();
+
+    // history trail
+    ctx.strokeStyle = cols.purple;
+    ctx.fillStyle = cols.purple;
+    ctx.lineWidth = 1.5;
+    ctx.beginPath();
+    history.forEach((hx, i) => {
+      const py = mapY(hx * hx, yRange, h);
+      const px = mapX(hx, xRange, w);
+      if (i === 0) ctx.moveTo(px, py); else ctx.lineTo(px, py);
+    });
+    ctx.stroke();
+    history.forEach((hx, i) => {
+      const py = mapY(hx * hx, yRange, h);
+      const px = mapX(hx, xRange, w);
+      ctx.beginPath();
+      ctx.arc(px, py, i === history.length - 1 ? 8 : 3, 0, Math.PI * 2);
+      ctx.fill();
+    });
+
+    // ball at current
+    ctx.fillStyle = cols.warn;
+    ctx.beginPath();
+    ctx.arc(mapX(currentX, xRange, w), mapY(currentX * currentX, yRange, h), 10, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.strokeStyle = cols.text;
+    ctx.lineWidth = 1.5;
+    ctx.stroke();
+  }
+  gdCanvasState.draw = draw;
+
+  start.addEventListener('input', reset);
+  lr.addEventListener('input', updateUI);
+  document.getElementById('gd-run').addEventListener('click', toggleRun);
+  document.getElementById('gd-step').addEventListener('click', () => { statusEl.textContent = ''; step(); });
+  document.getElementById('gd-reset').addEventListener('click', () => { statusEl.textContent = ''; reset(); });
+  reset();
+})();
+
+/* ============================================================
+   REDRAW ALL CANVASES ON THEME CHANGE
+============================================================ */
+function redrawAllCanvases() {
+  [fnCanvasState, slopeCanvasState, vecCanvasState, derivCanvasState, gdCanvasState].forEach(s => {
+    if (s && typeof s.draw === 'function') s.draw();
+  });
+}
+
+/* ============================================================
+   KEYBOARD SHORTCUTS
+============================================================ */
+document.addEventListener('keydown', (e) => {
+  if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+  if (e.key === 't' || e.key === 'T') toggleTheme();
+  if (e.key === 'r' || e.key === 'R') resetProgress();
+});
+</script>
+
+</body>
+</html>
