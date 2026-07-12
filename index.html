@@ -1597,19 +1597,34 @@
         <button class="complete-btn" data-target="calculus">Mark complete</button>
       </div>
       <h2>12. Calculus (Derivatives) <span class="level-badge lvl-4">Level 4</span></h2>
-      <p>Calculus is the mathematics of change. In ML we ask: "if I nudge this parameter, how does the loss change?" That's a derivative.</p>
+      <p>Calculus is the mathematics of <strong>change</strong>. In ML we ask: "if I nudge this parameter a tiny bit, how much does the loss change?" The answer to that question is a <em>derivative</em>.</p>
 
-      <h3>12.1 Derivative Meaning</h3>
-      <p>$f'(x)$ = instantaneous slope of $f$ at $x$. How fast is $f$ changing right here?</p>
-
-      <h3>12.2 Power Rule</h3>
-      <p>$\dfrac{d}{dx} x^n = n x^{n-1}$. The most-used derivative rule.</p>
-      <div class="example">
-        <div class="label">Example</div>
-        $\frac{d}{dx} x^5 = 5x^4$. $\frac{d}{dx} \sqrt{x} = \frac{1}{2\sqrt{x}}$.
+      <div class="tip">
+        <strong>Beginner picture:</strong> imagine driving a car. The <em>speedometer</em> shows how fast your position is changing <em>right now</em> — that reading is a derivative. Position is the function; speed is its derivative.
       </div>
 
-      <h3>12.3 Other Rules</h3>
+      <h3>12.1 Derivative Meaning</h3>
+      <p>Formally, $f'(x)$ is the <strong>instantaneous slope</strong> of the curve $f$ at the point $x$. Three ways to picture the same idea:</p>
+      <ul>
+        <li><strong>Slope of a hill:</strong> stand on the graph at $x$. $f'(x)$ tells you how steep the ground is under your feet. Positive = going up, negative = going down, zero = flat.</li>
+        <li><strong>Sensitivity:</strong> if $x$ increases by a tiny amount $\Delta x$, then $f$ changes by roughly $f'(x)\cdot \Delta x$. So $f'(x)$ is a "conversion rate" from a nudge in $x$ to a nudge in $f$.</li>
+        <li><strong>Tangent line:</strong> $f'(x)$ is the slope of the straight line that just touches the curve at that point (see the widget below).</li>
+      </ul>
+      <p>The precise definition (limit of a shrinking secant line) is:</p>
+      <p>$f'(x) \;=\; \displaystyle\lim_{h \to 0} \dfrac{f(x+h) - f(x)}{h}$</p>
+      <p>Read it as: "take two points on the curve very close together, compute rise over run, then squeeze them together until they're basically the same point." Luckily we almost never use this limit directly — the rules below do the work for us.</p>
+
+      <h3>12.2 Power Rule</h3>
+      <p>Whenever you see $x$ raised to a power, use the <strong>power rule</strong>: pull the exponent down in front, then subtract 1 from the exponent.</p>
+      <p>$\dfrac{d}{dx} x^n = n\, x^{n-1}$</p>
+      <div class="example">
+        <div class="label">Example — step by step</div>
+        $\frac{d}{dx} x^5$: bring the $5$ down, subtract $1$ from the exponent → $5x^4$.<br/>
+        $\frac{d}{dx} x^3 = 3x^2$. $\frac{d}{dx} x = 1$ (since $x = x^1$). $\frac{d}{dx} \sqrt{x} = \frac{d}{dx} x^{1/2} = \frac{1}{2} x^{-1/2} = \frac{1}{2\sqrt{x}}$.
+      </div>
+
+      <h3>12.3 Other Rules (Your Everyday Toolbox)</h3>
+      <p>These few rules cover almost every derivative you'll meet in ML. Read the table as "if the function looks like this, the derivative looks like that."</p>
       <table>
         <tr><th>Rule</th><th>Formula</th></tr>
         <tr><td>Constant</td><td>$\frac{d}{dx} c = 0$</td></tr>
@@ -1620,27 +1635,47 @@
         <tr><td>$\ln x$</td><td>$\frac{d}{dx} \ln x = \frac{1}{x}$</td></tr>
       </table>
       <div class="example">
-        <div class="label">Example</div>
-        $f(x) = 4x^3 - 7x^2 + 2x - 9 \implies f'(x) = 12x^2 - 14x + 2$.
+        <div class="label">Example — combining rules</div>
+        $f(x) = 4x^3 - 7x^2 + 2x - 9$.<br/>
+        Differentiate each term separately (sum rule), pull out constants, apply the power rule:<br/>
+        &bull; $4x^3 \to 4\cdot 3 x^2 = 12x^2$<br/>
+        &bull; $-7x^2 \to -7 \cdot 2 x = -14x$<br/>
+        &bull; $2x \to 2$<br/>
+        &bull; $-9 \to 0$ (constants have zero slope)<br/>
+        So $f'(x) = 12x^2 - 14x + 2$.
       </div>
 
       <h3>12.4 Partial Derivatives</h3>
-      <p>Multi-input function: differentiate w.r.t. one variable, hold others constant. Notation: $\dfrac{\partial f}{\partial x}$.</p>
+      <p>What if the function has <em>several</em> inputs, like $f(x, y)$? A <strong>partial derivative</strong> asks: "if I wiggle just one input and freeze all the others, how does $f$ change?"</p>
+      <div class="tip">
+        <strong>Analogy:</strong> think of a hilly landscape where $x$ = east/west and $y$ = north/south, and $f(x,y)$ = altitude. $\frac{\partial f}{\partial x}$ is the slope you'd feel walking due east. $\frac{\partial f}{\partial y}$ is the slope walking due north. Same hill, two different directions.
+      </div>
+      <p>Practically: to compute $\frac{\partial f}{\partial x}$, pretend $y$ is a constant number and differentiate as usual.</p>
       <div class="example">
         <div class="label">Example</div>
         $f(x, y) = 3x^2 y + 4xy^3$.<br/>
-        $\frac{\partial f}{\partial x} = 6xy + 4y^3$, &nbsp; $\frac{\partial f}{\partial y} = 3x^2 + 12xy^2$.
+        Treat $y$ as a constant: $\frac{\partial f}{\partial x} = 6xy + 4y^3$.<br/>
+        Treat $x$ as a constant: $\frac{\partial f}{\partial y} = 3x^2 + 12xy^2$.
       </div>
 
       <h3>12.5 Chain Rule</h3>
-      <p>$\dfrac{d}{dx} f(g(x)) = f'(g(x)) \cdot g'(x)$. This <em>is</em> backpropagation.</p>
+      <p>The chain rule handles <strong>functions inside functions</strong> — like $\sin(x^2)$ or $(3x+1)^4$. The idea: differentiate the outer function, then multiply by the derivative of the inner function.</p>
+      <p>$\dfrac{d}{dx} f(g(x)) = f'(g(x)) \cdot g'(x)$</p>
+      <div class="tip">
+        <strong>Gears analogy:</strong> if gear A drives gear B, and B drives the wheel, then how fast the wheel spins per turn of A is (B-per-A) × (wheel-per-B). Multiply the rates along the chain. In ML this exact idea is called <strong>backpropagation</strong>.
+      </div>
       <div class="example">
         <div class="label">Example</div>
-        $f(x) = (3x + 1)^4 \implies f'(x) = 4(3x+1)^3 \cdot 3 = 12(3x+1)^3$.
+        $f(x) = (3x + 1)^4$.<br/>
+        Outer function is "something to the 4th power" → derivative $4(\cdot)^3$.<br/>
+        Inner function is $3x + 1$ → derivative $3$.<br/>
+        Multiply: $f'(x) = 4(3x+1)^3 \cdot 3 = 12(3x+1)^3$.
       </div>
 
       <h3>12.6 The Gradient</h3>
-      <p>$\nabla f = \left( \frac{\partial f}{\partial x_1}, \dots, \frac{\partial f}{\partial x_n} \right)$. Points in the direction of steepest increase.</p>
+      <p>The <strong>gradient</strong> is just "all the partial derivatives collected into a vector":</p>
+      <p>$\nabla f = \left( \dfrac{\partial f}{\partial x_1}, \dots, \dfrac{\partial f}{\partial x_n} \right)$</p>
+      <p>Back to the hilly-landscape picture: the gradient is an <em>arrow</em> that points in the direction where the hill goes up the fastest, and its length tells you <em>how</em> steep that direction is. Going the opposite way is the fastest way <em>down</em> — which is exactly what gradient descent does.</p>
 
       <div class="ml-link">
         <div class="label">ML Connection</div>
